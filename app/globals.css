@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #F3B705;
+  --color-secondary-gray: rgba(237, 232, 223, 0.60);
+
+  /* Font Family */
+  --font-outfit: var(--font-outfit);
+
+    /* breakpoint */
+  --breakpoint-xxs: 390px;
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 650px;
+  --breakpoint-md: 768px;
+  --breakpoint-xmd: 992px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xlg: 1200px;
+  --breakpoint-xl: 1560px;
+  --breakpoint-xxl: 1920px;
+  --breakpoint-3xl: 1920px;
+
+  /* shadow */
+
+  --shadow-custom: 0px 4px 16.2px 2px rgba(0, 0, 0, 0.2);
+}
+
+body {
+  @apply font-outfit bg-[#0D0D0D] text-white;
+}
+
+.section-padding-x {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.section-padding-y {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+@media screen and (min-width: 650px) {
+  .section-padding-x {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .section-padding-y {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+@media screen and (min-width: 1460px) {
+  .section-padding-x {
+    padding-left: 120px;
+    padding-right: 120px;
+  }
+  .section-padding-y {
+    padding-top: 100px;
+    padding-bottom: 100px;
+  }
+}
+
+
+
+/* Custom thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
