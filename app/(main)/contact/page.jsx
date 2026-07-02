@@ -145,7 +145,7 @@ const ContactPage = () => {
               {/* Submit Button */}
               <button 
                 type="submit"
-                className="w-full py-4 bg-[#F3B705] hover:bg-[#e2a704] text-black font-outfit text-[16px] font-bold rounded-[8px] transition-colors duration-200 mt-2 cursor-pointer border-none shadow-md active:scale-[0.99]"
+                className="w-full py-4 bg-primary hover:bg-[#e2a704] text-black font-outfit text-[16px] font-bold rounded-[8px] transition-colors duration-200 mt-2 cursor-pointer border-none shadow-md active:scale-[0.99]"
               >
                 Sent
               </button>
