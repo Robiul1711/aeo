@@ -112,16 +112,17 @@ button{
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-scroll-color);
+  background: var(--color-primary);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-scroll-color);
+  background: var(--color-primary);
 }
 
 /* Firefox */
 html {
+  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scroll-color) transparent;
 }

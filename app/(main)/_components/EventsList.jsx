@@ -40,7 +40,7 @@ const EventsList = () => {
   ];
 
   return (
-    <section className="w-full bg-[#050505] py-20 section-padding-x border-t border-white/5" style={{backgroundImage: `url(${bg.src})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+    <section id="events" className="w-full bg-[#050505] py-20 section-padding-x border-t border-white/5" style={{backgroundImage: `url(${bg.src})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
       <div className="max-w-7xl mx-auto flex flex-col gap-12">
         {/* Header */}
         <div className="text-center">
@@ -52,7 +52,7 @@ const EventsList = () => {
         {/* Grid List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {events.map((event) => (
-            <div key={event.id} className="flex flex-col group cursor-pointer">
+            <Link key={event.id} href={`/events/${event.id}`} className="flex flex-col group cursor-pointer">
               {/* Image Container Card */}
               <div className="relative w-full aspect-[4/5] rounded-[16px] overflow-hidden shadow-lg border border-white/5">
                 <Image
@@ -78,7 +78,7 @@ const EventsList = () => {
                   {event.location}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

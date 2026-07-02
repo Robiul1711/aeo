@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -10,14 +10,47 @@ import Logo from "@/assets/logo.png";
 const Navbar = () => {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentHash, setCurrentHash] = useState("");
+
+  useEffect(() => {
+    // Set initial hash
+    setCurrentHash(window.location.hash);
+
+    // Listen for hash changes
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash);
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    
+    // Also track scroll position to clear hash if scrolled to top
+    const handleScroll = () => {
+      if (window.scrollY < 100) {
+        setCurrentHash("");
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const navItems = [
     { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Events", href: "/events" },
+    { name: "About", href: "/#about" },
+    { name: "Events", href: "/#events" },
     { name: "Contact", href: "/contact" },
     { name: "Shop", href: "/shop" },
   ];
+
+  const checkIsActive = (href) => {
+    if (href.includes("#")) {
+      const hash = href.substring(href.indexOf("#"));
+      return pathname === "/" && currentHash === hash;
+    }
+    return pathname === href && (pathname === "/" ? !currentHash : true);
+  };
 
   return (
     <header className="w-full bg-[#0D0D0D]/40 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
@@ -36,7 +69,7 @@ const Navbar = () => {
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-10">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = checkIsActive(item.href);
             return (
               <Link
                 key={item.name}
@@ -82,7 +115,7 @@ const Navbar = () => {
       >
         <nav className="flex flex-col items-center gap-8">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = checkIsActive(item.href);
             return (
               <Link
                 key={item.name}
