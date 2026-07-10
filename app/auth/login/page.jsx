@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -10,8 +10,10 @@ import { useLoginMutation } from "@/redux/api/apiSlice";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/slices/authSlice";
 
-const LoginPage = () => {
+const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [loginUser, { isLoading }] = useLoginMutation();
@@ -46,7 +48,7 @@ const LoginPage = () => {
         }));
 
         setTimeout(() => {
-          router.push("/");
+          router.push(redirectTo);
         }, 1000);
       } else {
         toast.error(res?.message || "Login failed!");
@@ -170,5 +172,11 @@ const LoginPage = () => {
     </div>
   );
 };
+
+const LoginPage = () => (
+  <Suspense fallback={null}>
+    <LoginForm />
+  </Suspense>
+);
 
 export default LoginPage;

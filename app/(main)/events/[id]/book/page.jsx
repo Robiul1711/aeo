@@ -44,35 +44,28 @@ const SeatBookingPage = ({ params }) => {
   const { id: slug } = use(params);
   const token = useSelector((state) => state.auth.token);
 
-  // Proactively check if user is logged in
-  useEffect(() => {
-    if (!token) {
-      toast.error("Please log in to book seats.");
-      router.push("/auth/login");
-    }
-  }, [token, router]);
+  // Guests can view the seat map page directly. Redirect will only happen on Booking Setup.
 
   // Fetch Event details to get the numeric Event ID
   const { data: eventResponse, isLoading: eventLoading, isError: eventError } = useGetEventBySlugQuery(slug);
   const event = eventResponse?.data;
 
-  // Fetch Seat Map using the numeric Event ID (skip if no event ID or no auth token)
+  // Fetch Seat Map using the numeric Event ID (allow guests to view the seat map as well)
   const { data: seatsResponse, isLoading: seatsLoading, isFetching: seatsFetching, isError: seatsError, error: seatsApiError } = useGetSeatsByEventIdQuery(
     event?.id,
-    { skip: !event?.id || !token, refetchOnMountOrArgChange: true }
+    { skip: !event?.id, refetchOnMountOrArgChange: true }
   );
   const seatMap = seatsResponse?.data;
 
   // Setup Booking Mutation
   const [setupBooking, { isLoading: isBookingSetupLoading }] = useSetupBookingMutation();
 
-  // Handle API authorization errors (401 status)
+  // Handle API authorization errors (401 status) - silent redirect
   useEffect(() => {
     if (seatsApiError?.status === 401) {
-      toast.error("Session expired or unauthorized. Please log in again.");
-      router.push("/auth/login");
+      router.push(`/auth/login?redirect=/events/${slug}/book`);
     }
-  }, [seatsApiError, router]);
+  }, [seatsApiError, router, slug]);
 
   // Selected Seats State
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -80,10 +73,36 @@ const SeatBookingPage = ({ params }) => {
   // Pre-populate selected seats from API when FRESH data arrives (not stale cache)
   // Backend returns status: "selected" for seats the current logged-in user has already selected
   // We wait for seatsFetching=false so we always use fresh server data, not cached data
+  // We also load and merge any pending guest selections saved in sessionStorage before login redirect
   useEffect(() => {
     if (seatMap?.seats && !seatsFetching) {
       const alreadySelected = seatMap.seats.filter(s => s.status === "selected");
-      setSelectedSeats(alreadySelected);
+      
+      // Load pending guest selections (if any)
+      const pendingStr = sessionStorage.getItem("pending_selected_seats");
+      let pendingSeats = [];
+      if (pendingStr) {
+        try {
+          pendingSeats = JSON.parse(pendingStr);
+          sessionStorage.removeItem("pending_selected_seats");
+        } catch (e) {
+          console.error("Failed to parse pending seats:", e);
+        }
+      }
+
+      // Merge backend selections and guest session selections
+      const merged = [...alreadySelected];
+      pendingSeats.forEach((ps) => {
+        if (!merged.some((m) => m.id === ps.id)) {
+          // Verify that the seat is still available in the map
+          const freshSeat = seatMap.seats.find((s) => s.id === ps.id);
+          if (freshSeat && freshSeat.status === "available") {
+            merged.push(freshSeat);
+          }
+        }
+      });
+
+      setSelectedSeats(merged);
     }
   }, [seatMap?.seats, seatsFetching]);
 
@@ -136,6 +155,14 @@ const SeatBookingPage = ({ params }) => {
       return;
     }
 
+    // If not authenticated, save selection to sessionStorage and redirect to login
+    if (!token) {
+      toast.error("Please log in to book your seats.");
+      sessionStorage.setItem("pending_selected_seats", JSON.stringify(selectedSeats));
+      router.push(`/auth/login?redirect=/events/${slug}/book`);
+      return;
+    }
+
     try {
       // Generate a unique session_id or read from sessionStorage/localStorage
       let sessionId = sessionStorage.getItem("booking_session_id");
@@ -179,7 +206,7 @@ const SeatBookingPage = ({ params }) => {
   }
 
   // Error States (only show if not redirecting due to auth errors)
-  if ((eventError || seatsError || !event) && seatsApiError?.status !== 401 && token) {
+  if ((eventError || seatsError || !event) && seatsApiError?.status !== 401) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#0D0D0D] text-white gap-4">
         <p className="text-red-500/80 font-outfit text-lg">Failed to load event or seat map.</p>
