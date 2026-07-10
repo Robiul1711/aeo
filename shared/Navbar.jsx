@@ -108,7 +108,7 @@ const Navbar = () => {
 
                     {/* Dropdown Menu */}
                     {isDropdownHovered && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-[100%] pt-2 z-50">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50">
                         <div className="bg-white border border-white/10 rounded-[12px] p-1.5 shadow-2xl min-w-[140px] flex flex-col gap-1">
                           {item.dropdown.map((subItem) => {
                             const isSubActive = pathname === subItem.href;
@@ -174,7 +174,7 @@ const Navbar = () => {
               className={`w-6 h-[2px] bg-white transition-opacity duration-300 ${isMobileMenuOpen ? "opacity-0" : "opacity-100"}`}
             />
             <span
-              className={`w-6 h-[2px] bg-white transition-transform duration-300 ${isMobileMenuOpen ? "-rotate-45 -translate-y-[8px]" : ""}`}
+              className={`w-6 h-[2px] bg-white transition-transform duration-300 ${isMobileMenuOpen ? "-rotate-45 translate-y-[-8px]" : ""}`}
             />
           </button>
         </div>
