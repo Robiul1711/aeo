@@ -1,100 +1,211 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiX } from "react-icons/fi";
+import { FiX, FiCalendar, FiMapPin, FiClock } from "react-icons/fi";
+import { useGetEventBySlugQuery, useGetSeatsByEventIdQuery, useSetupBookingMutation } from "@/redux/api/apiSlice";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
-// Mock Event Details Data
-const eventDetailsData = {
-  "1": {
-    title: "Blue Hour - The Midnight",
-    date: "Sat, Nov 8",
-    time: "8:00 PM",
-    price: 45,
-  },
-  "2": {
-    title: "Amber & Ash - The Midnight",
-    date: "Mon, Nov 10",
-    time: "8:00 PM",
-    price: 45,
-  },
-  "3": {
-    title: "Bite Society - The Midnight",
-    date: "Tue, Nov 11",
-    time: "8:00 PM",
-    price: 45,
-  },
-  "4": {
-    title: "Noir Kitchen - The Midnight",
-    date: "Sat, Nov 18",
-    time: "8:00 PM",
-    price: 45,
+// Date Formatter
+const formatEventDate = (dateStr) => {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const dayOfWeek = dayNames[date.getDay()];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    return `${dayOfWeek}, ${month} ${day}`;
+  } catch (e) {
+    return dateStr;
   }
 };
 
-const defaultEvent = {
-  title: "Neon Nights Tour · The Midnight",
-  date: "Sat, Jul 12",
-  time: "8:00 PM",
-  price: 45,
-};
-
-// Mock Predefined Sold Seats
-const soldSeats = [
-  { row: 1, seat: 3 }, { row: 1, seat: 9 },
-  { row: 2, seat: 2 }, { row: 2, seat: 8 },
-  { row: 3, seat: 3 }, { row: 3, seat: 4 }, { row: 3, seat: 8 },
-  { row: 4, seat: 2 }, { row: 4, seat: 7 },
-  { row: 5, seat: 8 }, { row: 5, seat: 9 }
-];
-
-const isSold = (row, seat) => {
-  return soldSeats.some((s) => s.row === row && s.seat === seat);
+// Time Formatter
+const formatTime = (timeStr) => {
+  if (!timeStr) return "";
+  try {
+    const parts = timeStr.split(":");
+    const h = parseInt(parts[0], 10);
+    const m = parts[1];
+    const ampm = h >= 12 ? "PM" : "AM";
+    const formattedHour = h % 12 || 12;
+    return `${formattedHour}:${m} ${ampm}`;
+  } catch (e) {
+    return timeStr;
+  }
 };
 
 const SeatBookingPage = ({ params }) => {
   const router = useRouter();
-  const { id } = use(params);
-  const event = eventDetailsData[id] || defaultEvent;
+  const { id: slug } = use(params);
+  const token = useSelector((state) => state.auth.token);
 
-  // Selected Seats State (initially pre-selected Row 3 - Seat 5 to match screenshot)
-  const [selectedSeats, setSelectedSeats] = useState([{ row: 3, seat: 5 }]);
+  // Proactively check if user is logged in
+  useEffect(() => {
+    if (!token) {
+      toast.error("Please log in to book seats.");
+      router.push("/auth/login");
+    }
+  }, [token, router]);
 
-  const isSelected = (row, seat) => {
-    return selectedSeats.some((s) => s.row === row && s.seat === seat);
+  // Fetch Event details to get the numeric Event ID
+  const { data: eventResponse, isLoading: eventLoading, isError: eventError } = useGetEventBySlugQuery(slug);
+  const event = eventResponse?.data;
+
+  // Fetch Seat Map using the numeric Event ID (skip if no event ID or no auth token)
+  const { data: seatsResponse, isLoading: seatsLoading, isFetching: seatsFetching, isError: seatsError, error: seatsApiError } = useGetSeatsByEventIdQuery(
+    event?.id,
+    { skip: !event?.id || !token, refetchOnMountOrArgChange: true }
+  );
+  const seatMap = seatsResponse?.data;
+
+  // Setup Booking Mutation
+  const [setupBooking, { isLoading: isBookingSetupLoading }] = useSetupBookingMutation();
+
+  // Handle API authorization errors (401 status)
+  useEffect(() => {
+    if (seatsApiError?.status === 401) {
+      toast.error("Session expired or unauthorized. Please log in again.");
+      router.push("/auth/login");
+    }
+  }, [seatsApiError, router]);
+
+  // Selected Seats State
+  const [selectedSeats, setSelectedSeats] = useState([]);
+
+  // Pre-populate selected seats from API when FRESH data arrives (not stale cache)
+  // Backend returns status: "selected" for seats the current logged-in user has already selected
+  // We wait for seatsFetching=false so we always use fresh server data, not cached data
+  useEffect(() => {
+    if (seatMap?.seats && !seatsFetching) {
+      const alreadySelected = seatMap.seats.filter(s => s.status === "selected");
+      setSelectedSeats(alreadySelected);
+    }
+  }, [seatMap?.seats, seatsFetching]);
+
+  const isSelected = (seatId) => {
+    return selectedSeats.some((s) => s.id === seatId);
   };
 
-  const handleSeatClick = (row, seat) => {
-    if (isSold(row, seat)) return;
-    
-    if (isSelected(row, seat)) {
-      setSelectedSeats((prev) => prev.filter((s) => !(s.row === row && s.seat === seat)));
+  // A seat is "disabled" only if it is booked/sold/pre_sold/blocked by someone else
+  // "selected" status means the CURRENT user already selected it → it should be toggleable
+  const isDisabled = (seat) => {
+    return ["booked", "pre_sold", "blocked"].includes(seat.status);
+  };
+
+  const handleSeatClick = (seat) => {
+    if (isDisabled(seat)) return;
+
+    if (isSelected(seat.id)) {
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
     } else {
-      setSelectedSeats((prev) => [...prev, { row, seat }]);
+      setSelectedSeats((prev) => [...prev, seat]);
     }
   };
 
-  const handleRemoveSeat = (row, seat) => {
-    setSelectedSeats((prev) => prev.filter((s) => !(s.row === row && s.seat === seat)));
+  const handleRemoveSeat = (seatId) => {
+    setSelectedSeats((prev) => prev.filter((s) => s.id !== seatId));
+  };
+
+  // Helper to extract seat price and service charge details
+  const getSeatPriceDetails = (categoryId) => {
+    const category = seatMap?.categories?.find((cat) => cat.id === categoryId);
+    const price = category ? category.price : 45; // Default fallback to 45
+    const servicePct = category ? category.service_charge_pct : 12; // Default fallback to 12%
+    const serviceFee = (price * servicePct) / 100;
+    return { price, serviceFee };
   };
 
   // Math calculations
-  const subtotal = selectedSeats.length * event.price;
-  const serviceFee = selectedSeats.length * 5.40; // £5.40 service fee per seat
+  let subtotal = 0;
+  let serviceFee = 0;
+  selectedSeats.forEach((seat) => {
+    const details = getSeatPriceDetails(seat.category_id);
+    subtotal += details.price;
+    serviceFee += details.serviceFee;
+  });
   const total = subtotal + serviceFee;
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
     if (selectedSeats.length === 0) {
       toast.error("Please select at least one seat.");
       return;
     }
-    router.push(`/events/${id}/checkout?seats=${selectedSeats.length}`);
+
+    try {
+      // Generate a unique session_id or read from sessionStorage/localStorage
+      let sessionId = sessionStorage.getItem("booking_session_id");
+      if (!sessionId) {
+        sessionId = `sess_${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
+        sessionStorage.setItem("booking_session_id", sessionId);
+      }
+
+      const seatIds = selectedSeats.map((s) => s.id);
+      
+      const payload = {
+        seat_ids: seatIds,
+        session_id: sessionId,
+        event_id: event.id,
+      };
+
+      const result = await setupBooking(payload).unwrap();
+      
+      if (result.status) {
+        toast.success(result.message || "Seats reserved successfully!");
+        // Navigate to checkout with seats count, booking ID, booking reference, and pricing
+        router.push(
+          `/events/${slug}/checkout?seats=${selectedSeats.length}&booking_id=${result.data?.booking?.id}&reference=${result.data?.booking?.booking_reference}&subtotal=${subtotal}&serviceFee=${serviceFee}&total=${total}`
+        );
+      } else {
+        toast.error(result.message || "Failed to reserve seats.");
+      }
+    } catch (err) {
+      console.error("Booking setup error:", err);
+      toast.error(err?.data?.message || "An error occurred while reserving seats. Please try again.");
+    }
   };
 
-  const rows = [1, 2, 3, 4, 5];
-  const seatsInRow = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // Loading States
+  if (eventLoading || (event?.id && seatsLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0D0D0D] text-white">
+        <p className="text-white/60 font-outfit text-lg">Loading seat map...</p>
+      </div>
+    );
+  }
+
+  // Error States (only show if not redirecting due to auth errors)
+  if ((eventError || seatsError || !event) && seatsApiError?.status !== 401 && token) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0D0D0D] text-white gap-4">
+        <p className="text-red-500/80 font-outfit text-lg">Failed to load event or seat map.</p>
+        <Link href="/events" className="text-primary hover:underline font-outfit font-semibold">
+          Back to Events
+        </Link>
+      </div>
+    );
+  }
+
+  // Group seats by row
+  const seatsByRow = {};
+  seatMap?.seats?.forEach((seat) => {
+    if (!seatsByRow[seat.row]) {
+      seatsByRow[seat.row] = [];
+    }
+    seatsByRow[seat.row].push(seat);
+  });
+
+  // Sort seats in each row by column number
+  Object.keys(seatsByRow).forEach((row) => {
+    seatsByRow[row].sort((a, b) => a.column - b.column);
+  });
+
+  // Sort rows alphabetically (A, B, C, D...)
+  const rows = Object.keys(seatsByRow).sort();
 
   return (
     <div className="pt-10 pb-24 section-padding-x">
@@ -102,21 +213,21 @@ const SeatBookingPage = ({ params }) => {
         
         {/* Header Title for SEO / Screen Identifiers */}
         <div className="sr-only">
-          <h2>Sit Booking Page Design</h2>
+          <h2>Seat Booking Page Design</h2>
         </div>
 
         {/* Event & Date Header Block */}
-        <div className="bg-[#111111]/60 border border-white/5 rounded-[16px] p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 shadow-md">
+        <div className="bg-[#111111]/60 border border-white/5 rounded-[16px] p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 shadow-md select-none">
           <div className="flex flex-col min-w-0">
             <span className="text-white/40 font-outfit text-[12px] uppercase tracking-wider font-semibold">Event</span>
             <span className="text-white font-outfit font-semibold text-[17px] sm:text-[19px] mt-1.5 truncate">
-              {event.title}
+              {event?.title}
             </span>
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-white/40 font-outfit text-[12px] uppercase tracking-wider font-semibold">Date</span>
             <span className="text-white font-outfit font-semibold text-[17px] sm:text-[19px] mt-1.5 truncate">
-              {event.date} · {event.time}
+              {formatEventDate(event?.event_date)} · {formatTime(event?.start_time)}
             </span>
           </div>
         </div>
@@ -130,7 +241,7 @@ const SeatBookingPage = ({ params }) => {
             {/* Seat Map Header with Legend */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-white/5 pb-5">
               <h3 className="text-white text-[19px] sm:text-[21px] font-outfit font-semibold tracking-wide">
-                Section Your Sit
+                Section Your Seat
               </h3>
               
               {/* Legend List */}
@@ -153,21 +264,21 @@ const SeatBookingPage = ({ params }) => {
             {/* Responsive Scrollable Seat Grid */}
             <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
               <div className="min-w-[480px] flex flex-col gap-4 sm:gap-5 justify-center py-2">
-                {rows.map((rowNum) => (
-                  <div key={rowNum} className="flex items-center justify-center gap-2 sm:gap-3">
+                {rows.map((rowLabel) => (
+                  <div key={rowLabel} className="flex items-center justify-center gap-2 sm:gap-3">
                     {/* Row Label */}
                     <span className="text-white/40 font-outfit text-[14px] sm:text-[16px] font-semibold w-6 text-center select-none mr-2 sm:mr-3">
-                      {rowNum}
+                      {rowLabel}
                     </span>
                     
                     {/* Row Seats */}
-                    {seatsInRow.map((seatNum) => {
-                      const sold = isSold(rowNum, seatNum);
-                      const selected = isSelected(rowNum, seatNum);
+                    {seatsByRow[rowLabel].map((seat) => {
+                      const disabled = isDisabled(seat);
+                      const selected = isSelected(seat.id);
 
                       let buttonStyles = "w-[30px] h-[30px] sm:w-[38px] sm:h-[38px] rounded-[6px] font-outfit font-semibold text-[13px] sm:text-[14px] flex items-center justify-center transition-all select-none ";
                       
-                      if (sold) {
+                      if (disabled) {
                         buttonStyles += "bg-white/10 text-white/30 cursor-not-allowed";
                       } else if (selected) {
                         buttonStyles += "bg-primary text-black cursor-pointer shadow-md";
@@ -177,12 +288,13 @@ const SeatBookingPage = ({ params }) => {
 
                       return (
                         <button
-                          key={seatNum}
-                          onClick={() => handleSeatClick(rowNum, seatNum)}
-                          disabled={sold}
+                          key={seat.id}
+                          onClick={() => handleSeatClick(seat)}
+                          disabled={disabled}
                           className={buttonStyles}
+                          title={`${seat.seat_number} - £${getSeatPriceDetails(seat.category_id).price}${disabled ? ` (${seat.status})` : ""}`}
                         >
-                          {seatNum}
+                          {seat.column}
                         </button>
                       );
                     })}
@@ -203,32 +315,35 @@ const SeatBookingPage = ({ params }) => {
               {/* Selected Seats List */}
               <div className="flex flex-col gap-3.5 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
                 {selectedSeats.length === 0 ? (
-                  <div className="text-white/40 font-outfit text-center py-6 border border-dashed border-white/5 rounded-[12px] text-[14px]">
+                  <div className="text-white/40 font-outfit text-center py-6 border border-dashed border-white/5 rounded-[12px] text-[14px] select-none">
                     No seats selected.
                   </div>
                 ) : (
-                  selectedSeats.map(({ row, seat }, idx) => (
-                    <div 
-                      key={`${row}-${seat}`}
-                      className="flex justify-between items-center bg-primary/5 border border-primary/20 rounded-[12px] p-4 select-none transition-all"
-                    >
-                      <span className="text-primary font-outfit font-medium text-[14px]">
-                        Row {row} - Seat {seat}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-primary font-outfit font-semibold text-[16px]">
-                          £{event.price}
+                  selectedSeats.map((seat) => {
+                    const { price: seatPrice } = getSeatPriceDetails(seat.category_id);
+                    return (
+                      <div 
+                        key={seat.id}
+                        className="flex justify-between items-center bg-primary/5 border border-primary/20 rounded-[12px] p-4 select-none transition-all"
+                      >
+                        <span className="text-primary font-outfit font-medium text-[14px]">
+                          Seat {seat.seat_number}
                         </span>
-                        <button 
-                          onClick={() => handleRemoveSeat(row, seat)}
-                          className="text-primary/70 hover:text-primary transition-colors cursor-pointer"
-                          aria-label={`Deselect Row ${row} Seat ${seat}`}
-                        >
-                          <FiX className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <span className="text-primary font-outfit font-semibold text-[16px]">
+                            £{seatPrice}
+                          </span>
+                          <button 
+                            onClick={() => handleRemoveSeat(seat.id)}
+                            className="text-primary/70 hover:text-primary transition-colors cursor-pointer bg-transparent border-none outline-none"
+                            aria-label={`Deselect Seat ${seat.seat_number}`}
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
@@ -255,9 +370,10 @@ const SeatBookingPage = ({ params }) => {
               <div className="mt-2 flex flex-col gap-3">
                 <button
                   onClick={handleBookNow}
-                  className="w-full py-4 bg-primary hover:bg-primary/95 text-black font-outfit text-[16px] font-bold rounded-[12px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg border-none"
+                  disabled={selectedSeats.length === 0 || isBookingSetupLoading}
+                  className="w-full py-4 bg-primary hover:bg-primary/95 text-black font-outfit text-[16px] font-bold rounded-[12px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg border-none disabled:bg-[#856A15]/40 disabled:text-white/40 disabled:cursor-not-allowed disabled:scale-100"
                 >
-                  Book Now
+                  {isBookingSetupLoading ? "Reserving..." : "Book Now"}
                 </button>
                 <span className="text-white/40 font-outfit text-[12px] text-center select-none">
                   No booking fees on selected tickets

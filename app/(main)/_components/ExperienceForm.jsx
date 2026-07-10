@@ -1,14 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import BannerBg from '@/assets/banner.png';
 import { GlowButton } from '@/components/common/GlowButton';
+import { useSubscribeNewsletterMutation } from '@/redux/api/apiSlice';
+import toast from 'react-hot-toast';
 
 const ExperienceForm = () => {
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [subscribeNewsletter, { isLoading }] = useSubscribeNewsletterMutation();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for subscribing to our next experience!');
+    if (!email || !phone) {
+      toast.error('Please enter both email and phone number.');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('agreed_to_terms', '1'); // Implicitly agree to terms as required by API
+
+      const res = await subscribeNewsletter(formData).unwrap();
+      if (res?.status) {
+        toast.success(res.message || 'Thank you for subscribing to our newsletter!');
+        setEmail('');
+        setPhone('');
+      } else {
+        toast.error(res?.message || 'Subscription failed!');
+      }
+    } catch (err) {
+      console.error('Newsletter subscription error:', err);
+      toast.error(err?.data?.message || err?.message || 'Subscription failed. Please try again.');
+    }
   };
 
   return (
@@ -53,6 +81,8 @@ const ExperienceForm = () => {
             <input 
               type="email" 
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="example@gmail.com"
               className="w-full bg-transparent border-b border-white/20 pb-2 text-white font-outfit text-[15px] placeholder-white/30 focus:border-white/60 focus:outline-none transition-colors duration-200"
             />
@@ -63,14 +93,18 @@ const ExperienceForm = () => {
             <input 
               type="tel" 
               required
-              placeholder="enter you phone number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="enter your phone number"
               className="w-full bg-transparent border-b border-white/20 pb-2 text-white font-outfit text-[15px] placeholder-white/30 focus:border-white/60 focus:outline-none transition-colors duration-200"
             />
           </div>
 
           {/* Submit Button */}
           <div className="flex justify-center mt-6">
-            <GlowButton onClick={null}>Explore the next</GlowButton>
+            <GlowButton onClick={null}>
+              {isLoading ? 'Subscribing...' : 'Explore the next'}
+            </GlowButton>
           </div>
         </form>
       </div>

@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useRegisterMutation } from "@/redux/api/apiSlice";
 
 const RegisterPage = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const {
     register,
@@ -30,12 +32,30 @@ const RegisterPage = () => {
 
   const passwordValue = watch("password");
 
-  const onSubmit = (data) => {
-    console.log("Register form submission data:", data);
-    toast.success("Account created successfully! Redirecting...");
-    setTimeout(() => {
-      router.push("/auth/verify-otp");
-    }, 1000);
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append("first_name", data.firstName);
+      formData.append("last_name", data.lastName);
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+      formData.append("password_confirmation", data.confirmPassword);
+
+      const res = await registerUser(formData).unwrap();
+      
+      if (res?.status) {
+        toast.success(res.message || "A verification code has been sent to your email address.");
+        const registerToken = res.data?.token;
+        setTimeout(() => {
+          router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email)}&token=${encodeURIComponent(registerToken)}`);
+        }, 1000);
+      } else {
+        toast.error(res?.message || "Registration failed!");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      toast.error(err?.data?.message || err?.message || "Registration failed! Please try again.");
+    }
   };
 
   return (
@@ -197,9 +217,10 @@ const RegisterPage = () => {
         {/* Sign Up Button */}
         <button
           type="submit"
-          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] cursor-pointer font-outfit border-none"
+          disabled={isLoading}
+          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] cursor-pointer font-outfit border-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign Up
+          {isLoading ? "Signing Up..." : "Sign Up"}
         </button>
       </form>
 

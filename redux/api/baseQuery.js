@@ -1,7 +1,7 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL,
   // credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token;

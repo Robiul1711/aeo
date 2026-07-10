@@ -10,7 +10,7 @@ export const apiSlice = createApi({
   endpoints: builder => ({
     login: builder.mutation({
       query: payload => ({
-        url: "/auth/login",
+        url: "/login",
         method: "POST",
         body: payload,
       }),
@@ -18,7 +18,63 @@ export const apiSlice = createApi({
 
     register: builder.mutation({
       query: payload => ({
-        url: "/users/add",
+        url: "/sign-up",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    verifyOtp: builder.mutation({
+      query: payload => ({
+        url: "/verify/otp",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    resendOtp: builder.mutation({
+      query: payload => ({
+        url: "/resend-otp",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    forgetPassword: builder.mutation({
+      query: payload => ({
+        url: "/forget-password",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    forgetPasswordVerifyOtp: builder.mutation({
+      query: payload => ({
+        url: "/forget-password/verify-otp",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: payload => ({
+        url: "/reset-password",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    submitContactInquiry: builder.mutation({
+      query: payload => ({
+        url: "/contact-us",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    subscribeNewsletter: builder.mutation({
+      query: payload => ({
+        url: "/newsletter/subscribe",
         method: "POST",
         body: payload,
       }),
@@ -79,6 +135,78 @@ export const apiSlice = createApi({
       query: page => `/posts?_page=${page}&_limit=5`,
       keepUnusedDataFor: 60,
     }),
+
+    getEvents: builder.query({
+      query: () => ({
+        url: "/events",
+        method: "GET",
+      }),
+    }),
+
+    getEventBySlug: builder.query({
+      query: slug => ({
+        url: `/events/${slug}`,
+        method: "GET",
+      }),
+    }),
+
+    getSeatsByEventId: builder.query({
+      query: eventId => ({
+        url: `/events/${eventId}/seats`,
+        method: "GET",
+      }),
+    }),
+
+    getHomePageCMS: builder.query({
+      query: () => ({
+        url: "/cms-pages/home-page",
+        method: "GET",
+      }),
+    }),
+
+    getFooterCMS: builder.query({
+      query: () => ({
+        url: "/cms-pages/footer",
+        method: "GET",
+      }),
+    }),
+
+    getPrivacyPolicyCMS: builder.query({
+      query: () => ({
+        url: "/cms-pages/privacy-policy",
+        method: "GET",
+      }),
+    }),
+
+    getTermsOfServiceCMS: builder.query({
+      query: () => ({
+        url: "/cms-pages/terms-of-service",
+        method: "GET",
+      }),
+    }),
+
+    setupBooking: builder.mutation({
+      query: (body) => ({
+        url: "/bookings/setup",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    confirmBookingCheckout: builder.mutation({
+      query: ({ reference, body }) => ({
+        url: `/bookings/${reference}/checkout`,
+        method: "POST",
+        body,
+      }),
+    }),
+
+    getBookingByReference: builder.query({
+      query: reference => ({
+        url: `/bookings/${reference}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -86,8 +214,25 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation,
+  useForgetPasswordMutation,
+  useForgetPasswordVerifyOtpMutation,
+  useResetPasswordMutation,
+  useSubmitContactInquiryMutation,
+  useSubscribeNewsletterMutation,
   useGetMeQuery,
   useGetProductsQuery,
   useAddProductMutation,
   useGetPostsQuery,
+  useGetEventsQuery,
+  useGetEventBySlugQuery,
+  useGetSeatsByEventIdQuery,
+  useGetHomePageCMSQuery,
+  useGetFooterCMSQuery,
+  useGetPrivacyPolicyCMSQuery,
+  useGetTermsOfServiceCMSQuery,
+  useSetupBookingMutation,
+  useConfirmBookingCheckoutMutation,
+  useGetBookingByReferenceQuery,
 } = apiSlice;

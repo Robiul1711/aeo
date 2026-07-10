@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useLoginMutation } from "@/redux/api/apiSlice";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/slices/authSlice";
 
 const LoginPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loginUser, { isLoading }] = useLoginMutation();
 
   const {
     register,
@@ -23,13 +28,33 @@ const LoginPage = () => {
     }
   });
 
-  const onSubmit = (data) => {
-    console.log("Login form submission data:", data);
-    toast.success("Welcome back! Signing in...");
-    // Simulate successful login redirection
-    setTimeout(() => {
-      router.push("/");
-    }, 1000);
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+
+      const res = await loginUser(formData).unwrap();
+      
+      if (res?.status) {
+        toast.success(res.message || "Logged in successfully!");
+        
+        // Save user and token in Redux store
+        dispatch(setUser({
+          ...res.data,
+          accessToken: res.token,
+        }));
+
+        setTimeout(() => {
+          router.push("/");
+        }, 1000);
+      } else {
+        toast.error(res?.message || "Login failed!");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error(err?.data?.message || err?.message || "Login failed! Please check your credentials.");
+    }
   };
 
   return (
@@ -125,9 +150,10 @@ const LoginPage = () => {
         {/* Sign In Button */}
         <button
           type="submit"
-          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] cursor-pointer font-outfit border-none"
+          disabled={isLoading}
+          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] cursor-pointer font-outfit border-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign In
+          {isLoading ? "Signing In..." : "Sign In"}
         </button>
       </form>
 

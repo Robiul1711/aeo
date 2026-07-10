@@ -3,6 +3,10 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useVerifyOtpMutation, useResendOtpMutation, useForgetPasswordVerifyOtpMutation } from "@/redux/api/apiSlice";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/slices/authSlice";
+import toast from "react-hot-toast";
 
 const OtpInput = dynamic(() => import("react-otp-input"), {
   ssr: false,
@@ -12,13 +16,23 @@ const OtpInput = dynamic(() => import("react-otp-input"), {
 const VerifyOtpForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useDispatch();
   
-  // Get email from query params or fallback
-  const email = searchParams.get("email") || "example@gmail.com";
+  // Get email, initial token, and type from query params
+  const email = searchParams.get("email") || "";
+  const initialToken = searchParams.get("token") || "";
+  const type = searchParams.get("type") || ""; // 'forgot' or default registration
   
+  const [registerToken, setRegisterToken] = useState(initialToken);
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(56);
   const [canResend, setCanResend] = useState(false);
+
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const [forgetPasswordVerifyOtp, { isLoading: isVerifyingForgot }] = useForgetPasswordVerifyOtpMutation();
+
+  const isPending = isVerifying || isVerifyingForgot;
 
   // Timer logic for countdown
   useEffect(() => {
@@ -32,12 +46,85 @@ const VerifyOtpForm = () => {
     }
   }, [timer]);
 
-  const handleResend = () => {
-    if (!canResend) return;
+  const handleResend = async () => {
+    if (!canResend || !email) {
+      toast.error("Email not found. Cannot resend OTP.");
+      return;
+    }
     
-    setTimer(60);
-    setCanResend(false);
-    setOtp("");
+    try {
+      const formData = new FormData();
+      formData.append("email", email);
+
+      const res = await resendOtp(formData).unwrap();
+      
+      if (res?.status) {
+        toast.success(res.message || "OTP code resent successfully.");
+        if (res.data?.token) {
+          setRegisterToken(res.data.token);
+        }
+        setTimer(60);
+        setCanResend(false);
+        setOtp("");
+      } else {
+        toast.error(res?.message || "Failed to resend OTP.");
+      }
+    } catch (err) {
+      console.error("Resend OTP error:", err);
+      toast.error(err?.data?.message || err?.message || "Failed to resend OTP.");
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (otp.length < 6) {
+      toast.error("Please enter the complete 6-digit OTP.");
+      return;
+    }
+    if (!registerToken) {
+      toast.error("Token is missing. Please request a new OTP.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("otp", otp);
+      formData.append("token", registerToken);
+
+      if (type === "forgot") {
+        // Forgot password flow
+        const res = await forgetPasswordVerifyOtp(formData).unwrap();
+        if (res?.status) {
+          toast.success(res.message || "OTP verified successfully.");
+          const resetToken = res.data?.reset_token;
+          setTimeout(() => {
+            router.push(`/auth/reset-password?token=${encodeURIComponent(resetToken)}`);
+          }, 1000);
+        } else {
+          toast.error(res?.message || "Verification failed!");
+        }
+      } else {
+        // Default registration flow
+        const res = await verifyOtp(formData).unwrap();
+        if (res?.status) {
+          toast.success(res.message || "User registration successful.");
+          
+          dispatch(setUser({
+            ...res.data,
+            accessToken: res.token,
+          }));
+
+          setTimeout(() => {
+            router.push("/");
+          }, 1000);
+        } else {
+          toast.error(res?.message || "Verification failed!");
+        }
+      }
+    } catch (err) {
+      console.error("Verify OTP error:", err);
+      toast.error(err?.data?.message || err?.message || "Verification failed! Please try again.");
+    }
   };
 
   return (
@@ -46,12 +133,12 @@ const VerifyOtpForm = () => {
         Enter OTP Code
       </h1>
       <p className="text-sm text-white/60 text-center mb-8 max-w-[460px] leading-relaxed">
-        Check your inbox for the one-time verification code we've sent to your email. Enter the code below to proceed with resetting your password.
+        Check your inbox for the one-time verification code we've sent to your email. Enter the code below to complete your verification.
       </p>
 
-      <form onSubmit={(e) => e.preventDefault()} className="w-full flex flex-col items-center gap-6">
+      <form onSubmit={handleVerify} className="w-full flex flex-col items-center gap-6">
         <p className="text-sm font-semibold text-white/90 text-center">
-          Code has been sent to <span className="text-primary">{email}</span>
+          Code has been sent to <span className="text-primary">{email || "your email"}</span>
         </p>
 
         {/* OTP Input Fields */}
@@ -59,7 +146,7 @@ const VerifyOtpForm = () => {
           <OtpInput
             value={otp}
             onChange={setOtp}
-            numInputs={5}
+            numInputs={6}
             renderSeparator={<span className="w-2 sm:w-4"></span>}
             shouldAutoFocus
             renderInput={(props) => (
@@ -86,24 +173,24 @@ const VerifyOtpForm = () => {
           <button
             type="button"
             onClick={handleResend}
-            disabled={!canResend}
+            disabled={!canResend || isResending}
             className={`font-semibold transition-all ${
               canResend
                 ? "text-primary hover:underline cursor-pointer"
                 : "text-white/20 cursor-not-allowed"
             }`}
           >
-            Resend Code
+            {isResending ? "Resending..." : "Resend Code"}
           </button>
         </div>
 
         {/* Verify Button */}
         <button
           type="submit"
-          disabled={otp.length < 5}
-          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={otp.length < 6 || isPending}
+          className="w-full bg-primary hover:bg-primary/90 text-black font-semibold py-4 rounded-xl transition-all duration-200 mt-4 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer"
         >
-          Verify
+          {isPending ? "Verifying..." : "Verify"}
         </button>
       </form>
     </div>

@@ -29,7 +29,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${playfair.variable} antialiased`}>
+    <html lang="en" className={`${outfit.variable} ${playfair.variable} antialiased`} suppressHydrationWarning>
       <body>
         <ReduxProvider>
           <ToastProvider />

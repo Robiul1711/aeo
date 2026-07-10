@@ -1,116 +1,82 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiCalendar, FiMapPin, FiClock, FiMinus, FiPlus, FiChevronRight } from "react-icons/fi";
-import toast from "react-hot-toast";
-
-// Import local assets
-import E1 from "@/assets/e1.png";
-import E2 from "@/assets/e2.png";
-import E3 from "@/assets/e3.png";
-import E4 from "@/assets/e4.png";
-import E5 from "@/assets/e5.png";
-import V1 from "@/assets/v1.png";
-import V2 from "@/assets/v2.png";
-import V3 from "@/assets/v3.png";
-import V4 from "@/assets/v4.png";
+import { FiCalendar, FiMapPin, FiClock, FiChevronRight, FiTag, FiUsers } from "react-icons/fi";
+import { useGetEventBySlugQuery } from "@/redux/api/apiSlice";
 import BannerBg from "@/assets/banner.png";
 
-// Mock Event Details Data
-const eventDetailsData = {
-  "1": {
-    title: "Blue Hour",
-    date: "Sat, Nov 8",
-    time: "8:00 PM",
-    location: "Hackney Wick, London",
-    doorsOpen: "7:00 PM",
-    price: 45,
-    description: "Experience synth-wave legends The Midnight on their world-famous Neon Nights Tour — retro-futuristic soundscapes, pulsing drums, and two hours of pure euphoria.",
-    mainImage: E5,
-    venueName: "Hackney Wick Studio",
-    venueArea: "East London Canal",
-  },
-  "2": {
-    title: "Amber & Ash",
-    date: "Mon, Nov 10",
-    time: "8:00 PM",
-    location: "Old Town District, London",
-    doorsOpen: "7:30 PM",
-    price: 45,
-    description: "Amber & Ash blends live fire cooking, acoustic jazz, and warm lighting to create a cozy, intimate autumn gathering designed for the senses.",
-    mainImage: E5,
-    venueName: "The Hearth Room",
-    venueArea: "Old Town District",
-  },
-  "3": {
-    title: "Bite Society",
-    date: "Tue, Nov 11",
-    time: "8:00 PM",
-    location: "North Garden Street, London",
-    doorsOpen: "7:00 PM",
-    price: 45,
-    description: "A secret society event featuring underground culinary battles, neon pop art, and high-energy music in a repurposed industrial greenhouse.",
-    mainImage: E5,
-    venueName: "The Glass Greenhouse",
-    venueArea: "North Garden",
-  },
-  "4": {
-    title: "Noir Kitchen",
-    date: "Sat, Nov 18",
-    time: "8:00 PM",
-    location: "Lakeside Quarter, London",
-    doorsOpen: "6:30 PM",
-    price: 45,
-    description: "Noir Kitchen is a multi-sensory dark dining experience where blindfolded courses are paired with custom spatial audio and tactile sound design.",
-    mainImage: E5,
-    venueName: "Noir Black Box",
-    venueArea: "Lakeside Quarter",
+// Date Formatter
+const formatEventDate = (dateStr) => {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const dayOfWeek = dayNames[date.getDay()];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    return `${dayOfWeek}, ${month} ${day}`;
+  } catch (e) {
+    return dateStr;
   }
 };
 
-const defaultEvent = {
-  title: "Neon Nights Tour",
-  date: "Sat, Jul 12",
-  time: "8:00 PM",
-  location: "Brixton Academy, London",
-  doorsOpen: "7:00 PM",
-  price: 45,
-  description: "Experience synth-wave legends The Midnight on their world-famous Neon Nights Tour — retro-futuristic soundscapes, pulsing drums, and two hours of pure euphoria.",
-  mainImage: E5,
-  venueName: "Brixton Academy",
-  venueArea: "Lakeside Quarter",
+// Time Formatter
+const formatTime = (timeStr) => {
+  if (!timeStr) return "";
+  try {
+    const parts = timeStr.split(":");
+    const h = parseInt(parts[0], 10);
+    const m = parts[1];
+    const ampm = h >= 12 ? "PM" : "AM";
+    const formattedHour = h % 12 || 12;
+    return `${formattedHour}:${m} ${ampm}`;
+  } catch (e) {
+    return timeStr;
+  }
 };
 
 const EventDetailPage = ({ params }) => {
   const router = useRouter();
-  const { id } = use(params);
-  const event = eventDetailsData[id] || defaultEvent;
+  const { id: slug } = use(params);
 
-  // Interactive ticket counter state
-  const [quantity, setQuantity] = useState(2);
+  // Fetch event details dynamically from API
+  const { data: response, isLoading, isError } = useGetEventBySlugQuery(slug);
+  const event = response?.data;
 
-  const handleQuantityChange = (amount) => {
-    setQuantity((prev) => Math.max(1, prev + amount));
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0D0D0D] text-white">
+        <p className="text-white/60 font-outfit text-lg">Loading event details...</p>
+      </div>
+    );
+  }
 
-  const subtotal = quantity * event.price;
-  const serviceFee = quantity * 5.40; // £5.40 fee per ticket (matches £10.80 for 2 tickets)
-  const total = subtotal + serviceFee;
+  if (isError || !event) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0D0D0D] text-white gap-4">
+        <p className="text-red-500/80 font-outfit text-lg">Event not found or failed to load.</p>
+        <Link href="/events" className="text-primary hover:underline font-outfit font-semibold">
+          Back to Events
+        </Link>
+      </div>
+    );
+  }
 
   const handleBookNow = () => {
-    router.push(`/events/${id}/book`);
+    router.push(`/events/${event.slug}/book`);
   };
 
   return (
-    <div className="min-h-screen  text-white relative pb-20 section-padding-x">
+    <div className="min-h-screen text-white relative pb-20 section-padding-x">
       
       {/* Ambient Hero Background */}
       <div className="absolute top-0 left-0 w-full h-[60vh] md:h-[70vh] overflow-hidden -z-20">
         <Image
-          src={BannerBg}
+          src={event.banner_image || BannerBg}
           alt="Ambient Background"
           fill
           className="object-cover object-center "
@@ -151,8 +117,12 @@ const EventDetailPage = ({ params }) => {
                 <FiCalendar className="w-5 h-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-white font-outfit font-semibold text-[15px] truncate">{event.date}</span>
-                <span className="text-white/40 font-outfit text-[13px] mt-0.5">{event.time}</span>
+                <span className="text-white font-outfit font-semibold text-[15px] truncate">
+                  {formatEventDate(event.event_date)}
+                </span>
+                <span className="text-white/40 font-outfit text-[13px] mt-0.5">
+                  {formatTime(event.start_time)}
+                </span>
               </div>
             </div>
 
@@ -162,8 +132,12 @@ const EventDetailPage = ({ params }) => {
                 <FiMapPin className="w-5 h-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-white font-outfit font-semibold text-[15px] truncate">{event.venueName}</span>
-                <span className="text-white/40 font-outfit text-[13px] mt-0.5">{event.location.split(',')[1]?.trim() || "London"}</span>
+                <span className="text-white font-outfit font-semibold text-[15px] truncate">
+                  {event.city || "Dhaka"}
+                </span>
+                <span className="text-white/40 font-outfit text-[13px] mt-0.5 truncate">
+                  {event.address || "Venue Location"}
+                </span>
               </div>
             </div>
 
@@ -174,7 +148,9 @@ const EventDetailPage = ({ params }) => {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-white font-outfit font-semibold text-[15px]">Doors Open</span>
-                <span className="text-white/40 font-outfit text-[13px] mt-0.5">{event.doorsOpen}</span>
+                <span className="text-white/40 font-outfit text-[13px] mt-0.5">
+                  {formatTime(event.door_open_time)}
+                </span>
               </div>
             </div>
 
@@ -184,127 +160,134 @@ const EventDetailPage = ({ params }) => {
           <div className="mt-12">
             <h2 className="text-white text-[20px] sm:text-[22px] font-outfit font-semibold tracking-wide">About This Event</h2>
             <p className="text-secondary-gray text-[15px] sm:text-[16px] leading-relaxed font-outfit mt-4">
-              {event.description}
+              {event.description || "No description provided."}
             </p>
           </div>
 
           {/* Main Visual Image Card with Badge Overlay */}
-          <div className="relative w-full aspect-video rounded-[24px] overflow-hidden mt-12 border border-white/5 shadow-2xl group">
-            <Image
-              src={event.mainImage}
-              alt={event.title}
-              fill
-              priority
-              sizes="(max-w-1024px) 100vw, 800px"
-              className="object-cover"
-            />
+          <div className="relative w-full aspect-video rounded-[24px] overflow-hidden mt-12 border border-white/5 shadow-2xl group bg-[#111]">
+            {event.banner_image && (
+              <Image
+                src={event.banner_image}
+                alt={event.title}
+                fill
+                priority
+                sizes="(max-w-1024px) 100vw, 800px"
+                className="object-cover"
+              />
+            )}
             {/* Map pin badge overlay */}
             <div className="absolute bottom-6 left-6 bg-black/75 backdrop-blur-md border border-white/10 rounded-full px-5 py-2.5 flex items-center gap-2 select-none shadow-md">
               <FiMapPin className="text-primary w-4.5 h-4.5" />
               <span className="text-white text-[13px] sm:text-[14px] font-outfit font-medium">
-                {event.venueName}, {event.location.split(',')[1]?.trim() || "London"}
+                {event.city || "Dhaka"}
               </span>
             </div>
           </div>
 
           {/* Location Area Text */}
           <div className="mt-6">
-            <h3 className="text-white text-[20px] font-outfit font-semibold tracking-wide">{event.venueName}</h3>
-            <p className="text-secondary-gray text-[14px] font-outfit mt-1">{event.venueArea}</p>
+            <h3 className="text-white text-[20px] font-outfit font-semibold tracking-wide">{event.city || "Dhaka"}</h3>
+            <p className="text-secondary-gray text-[14px] font-outfit mt-1">{event.address || "Venue Address"}</p>
           </div>
 
           {/* Venues Picture Section */}
-          <div className="mt-14">
-            <h2 className="text-white text-[20px] sm:text-[22px] font-outfit font-semibold tracking-wide mb-6">Venues Picture</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {[V1, V2, V3, V4, V1, V2].map((vImg, idx) => (
-                <div 
-                  key={idx} 
-                  className="relative aspect-4/3 rounded-[16px] overflow-hidden border border-white/5 group shadow-md"
-                >
-                  <Image
-                    src={vImg}
-                    alt={`Venue photo ${idx + 1}`}
-                    fill
-                    sizes="(max-w-768px) 100vw, 300px"
-                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                  />
-                </div>
-              ))}
+          {event.gallery && event.gallery.length > 0 && (
+            <div className="mt-14">
+              <h2 className="text-white text-[20px] sm:text-[22px] font-outfit font-semibold tracking-wide mb-6">Gallery</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {event.gallery.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="relative aspect-4/3 rounded-[16px] overflow-hidden border border-white/5 group shadow-md bg-[#111]"
+                  >
+                    <Image
+                      src={item.image_url}
+                      alt={`Gallery image ${item.id}`}
+                      fill
+                      sizes="(max-w-768px) 100vw, 300px"
+                      className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
         {/* Right Column (Interactive Ticket Box Sidebar) */}
         <div className="lg:col-span-1">
           <div className="bg-[#111111]/70 backdrop-blur-md border border-white/5 rounded-[24px] p-6 sm:p-8 flex flex-col gap-6 lg:sticky lg:top-28 shadow-xl">
-            <h3 className="text-white text-[20px] font-outfit font-semibold tracking-wide">Select Tickets</h3>
-            
-            {/* Price Rate Card */}
-            <div className="border border-primary/20 bg-primary/5 rounded-[12px] p-4 flex justify-between items-center select-none">
-              <span className="text-primary font-outfit text-[14px] font-medium">Per Ticket Amount</span>
-              <span className="text-primary font-outfit font-semibold text-[18px]">£{event.price}</span>
-            </div>
+            <h3 className="text-white text-[20px] font-outfit font-semibold tracking-wide">Ticket Pricing</h3>
 
-            {/* Quantity Controls */}
-            <div className="flex flex-col gap-3">
-              <span className="text-white/60 font-outfit text-[14px] select-none">Quantity</span>
-              <div className="flex items-center gap-6">
-                {/* Decrement Button */}
-                <button
-                  onClick={() => handleQuantityChange(-1)}
-                  className="w-10 h-10 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white/80 hover:text-white transition-all bg-transparent disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-                  disabled={quantity <= 1}
-                  aria-label="Decrease ticket quantity"
-                >
-                  <FiMinus className="w-4 h-4" />
-                </button>
-                {/* Value */}
-                <span className="text-white font-outfit font-bold text-[18px] select-none w-5 text-center">
-                  {quantity}
+            {/* Seat Categories */}
+            {event.seat_categories && event.seat_categories.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {event.seat_categories.map((cat, idx) => {
+                  const catPrice = parseFloat(cat.price) || 0;
+                  const serviceCharge = (catPrice * cat.service_charge_pct) / 100;
+                  const totalPerSeat = catPrice + serviceCharge;
+                  return (
+                    <div key={cat.id} className="border border-primary/20 bg-primary/5 rounded-[14px] p-4 flex flex-col gap-2 select-none">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <FiTag className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-white/70 font-outfit text-[13px] font-medium uppercase tracking-wider">
+                            {event.seat_categories.length > 1 ? `Category ${idx + 1}` : "General Admission"}
+                          </span>
+                        </div>
+                        <span className="text-primary font-outfit font-bold text-[19px]">£{catPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/40 font-outfit text-[12px]">Service charge ({cat.service_charge_pct}%)</span>
+                        <span className="text-white/50 font-outfit text-[13px]">£{serviceCharge.toFixed(2)}</span>
+                      </div>
+                      <div className="border-t border-white/5 my-0.5" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/60 font-outfit text-[13px]">Total per seat</span>
+                        <span className="text-white font-outfit font-semibold text-[15px]">£{totalPerSeat.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="border border-white/10 rounded-[12px] p-4 text-white/40 font-outfit text-[14px] text-center">
+                Pricing not available
+              </div>
+            )}
+
+            {/* Seat Availability Summary */}
+            {event.seat_summary && (
+              <div className="flex items-center justify-between bg-white/3 border border-white/5 rounded-[12px] px-4 py-3 select-none">
+                <div className="flex items-center gap-2">
+                  <FiUsers className="w-4 h-4 text-white/40" />
+                  <span className="text-white/50 font-outfit text-[13px]">Seats Available</span>
+                </div>
+                <span className={`font-outfit font-bold text-[15px] ${
+                  event.seat_summary.available > 10 ? 'text-[#00DF89]' :
+                  event.seat_summary.available > 0 ? 'text-yellow-400' : 'text-red-400'
+                }`}>
+                  {event.seat_summary.available > 0 ? `${event.seat_summary.available} left` : 'Sold Out'}
                 </span>
-                {/* Increment Button */}
-                <button
-                  onClick={() => handleQuantityChange(1)}
-                  className="w-10 h-10 rounded-full border border-white/20 hover:border-white/50 flex items-center justify-center text-white/80 hover:text-white transition-all bg-transparent cursor-pointer"
-                  aria-label="Increase ticket quantity"
-                >
-                  <FiPlus className="w-4 h-4" />
-                </button>
               </div>
-            </div>
+            )}
 
-            {/* Price Math Breakdown */}
-            <div className="flex flex-col gap-3.5 mt-2 text-font-outfit">
-              <div className="flex justify-between items-center select-none">
-                <span className="text-white/60 text-[14px]">Subtotal</span>
-                <span className="text-white/80 text-[16px] font-medium">£{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center select-none">
-                <span className="text-white/60 text-[14px]">Service fee</span>
-                <span className="text-white/80 text-[16px] font-medium">£{serviceFee.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-white/5 my-1" />
-              <div className="flex justify-between items-center select-none">
-                <span className="text-white text-[18px] font-semibold">Total</span>
-                <span className="text-white text-[20px] font-bold">£{total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Book Now Button */}
-            <div className="mt-2 flex flex-col gap-3">
+            {/* Seat Booking Button */}
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleBookNow}
-                className="w-full py-4 bg-primary hover:bg-primary/95 text-black font-outfit text-[16px] font-bold rounded-[12px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg border-none"
+                disabled={event.seat_summary?.available === 0}
+                className="w-full py-4 bg-primary hover:bg-primary/95 text-black font-outfit text-[16px] font-bold rounded-[12px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg border-none disabled:bg-white/10 disabled:text-white/30 disabled:cursor-not-allowed disabled:scale-100"
               >
-                Book Now
+                {event.seat_summary?.available === 0 ? 'Sold Out' : 'Seat Booking'}
               </button>
               <span className="text-white/40 font-outfit text-[12px] text-center select-none">
                 No booking fees on selected tickets
               </span>
             </div>
-            
+
           </div>
         </div>
 
