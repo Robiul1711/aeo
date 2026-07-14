@@ -8,8 +8,9 @@
 
 
   /* Font Family */
-  --font-outfit: var(--font-outfit);
-  --font-playfair: var(--font-playfair);
+  --font-cormorant: var(--font-cormorant);
+  --font-outfit: var(--font-cormorant);
+  --font-playfair: var(--font-cormorant);
 
     /* breakpoint */
   --breakpoint-xxs: 390px;
@@ -29,7 +30,7 @@
 }
 
 body {
-  @apply font-outfit bg-[#0D0D0D] text-white;
+  @apply font-cormorant bg-[#0D0D0D] text-white;
 }
 
 button{

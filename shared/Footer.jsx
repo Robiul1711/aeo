@@ -79,9 +79,9 @@ const Footer = () => {
       </div>
 
       {/* Copyright/Rights Reserved section */}
-      <div className="section-padding-x mt-12 mb-8 relative z-10 border-t border-white/5 pt-8 text-secondary-gray font-outfit text-[14px]">
+      {/* <div className="section-padding-x mt-12 mb-8 relative z-10 border-t border-white/5 pt-8 text-secondary-gray font-outfit text-[14px]">
         <p>{rightsReserved}</p>
-      </div>
+      </div> */}
 
       {/* Big Logo Section (Bottom) */}
       <div className="w-full select-none pointer-events-none absolute bottom-0 left-0 right-0 z-0">
