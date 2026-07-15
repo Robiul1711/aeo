@@ -18,7 +18,7 @@ import V3 from "@/assets/v3.png";
 import V4 from "@/assets/v4.png";
 
 // A single scroll column component for vertical marquee
-const MarqueeColumn = ({ images, speed = "medium", direction = "up", className = "" }) => {
+const MarqueeColumn = ({ images, speed = "medium", direction = "up", className = "", onImageClick }) => {
   const speedClass = 
     speed === "fast" 
       ? "duration-[20s]" 
@@ -36,11 +36,12 @@ const MarqueeColumn = ({ images, speed = "medium", direction = "up", className =
 
   return (
     <div className={`relative flex flex-col overflow-hidden h-[340px] sm:h-[400px] md:h-[460px] lg:h-[500px] rounded-[20px] bg-transparent ${className}`}>
-      <div className={`flex flex-col gap-3 sm:gap-4 shrink-0 ${directionClass} ${speedClass} hover:[animation-play-state:paused] cursor-pointer`}>
+      <div className={`flex flex-col gap-3 sm:gap-4 shrink-0 ${directionClass} ${speedClass} hover:[animation-play-state:paused]`}>
         {duplicatedImages.map((img, idx) => (
           <div 
             key={`${idx}`} 
-            className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px] border border-white/5 group shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/20"
+            onClick={() => onImageClick && onImageClick(img)}
+            className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px] border border-white/5 group shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/20 cursor-pointer"
           >
             <Image
               src={img}
@@ -58,7 +59,7 @@ const MarqueeColumn = ({ images, speed = "medium", direction = "up", className =
   );
 };
 
-const MerchandiseSection = () => {
+const MerchandiseSection = ({ onImageClick }) => {
   // Image pools for different columns to keep visual variety
   const col1Images = [E3, V1, V2];
   const col2Images = [V1, E3, V3];
@@ -92,35 +93,35 @@ const MerchandiseSection = () => {
       {/* Gallery Canopy Area */}
       <div className="w-full max-w-[1700px] mx-auto z-10 relative">
         
-        {/* MOBILE GRID LAYOUT (3 Columns) - As shown in Screenshot 2 */}
+        {/* MOBILE GRID LAYOUT (3 Columns) */}
         <div className="grid grid-cols-3 gap-3 md:hidden w-full max-w-[500px] mx-auto select-none">
-          <MarqueeColumn images={mobileCol1} speed="medium" direction="up" className="translate-y-4" />
-          <MarqueeColumn images={mobileCol2} speed="slow" direction="down" className="-translate-y-4" />
-          <MarqueeColumn images={mobileCol3} speed="fast" direction="up" className="translate-y-4" />
+          <MarqueeColumn images={mobileCol1} speed="medium" direction="up" className="translate-y-4" onImageClick={onImageClick} />
+          <MarqueeColumn images={mobileCol2} speed="slow" direction="down" className="-translate-y-4" onImageClick={onImageClick} />
+          <MarqueeColumn images={mobileCol3} speed="fast" direction="up" className="translate-y-4" onImageClick={onImageClick} />
         </div>
 
         {/* TABLET GRID LAYOUT (6 Columns) */}
         <div className="hidden md:grid lg:hidden grid-cols-6 gap-4 w-full select-none">
-          <MarqueeColumn images={tabletCol1} speed="medium" direction="up" className="translate-y-8" />
-          <MarqueeColumn images={tabletCol2} speed="slow" direction="down" className="translate-y-0" />
-          <MarqueeColumn images={tabletCol3} speed="fast" direction="up" className="-translate-y-8" />
-          <MarqueeColumn images={tabletCol4} speed="fast" direction="down" className="-translate-y-8" />
-          <MarqueeColumn images={tabletCol5} speed="medium" direction="up" className="translate-y-0" />
-          <MarqueeColumn images={tabletCol6} speed="slow" direction="down" className="translate-y-8" />
+          <MarqueeColumn images={tabletCol1} speed="medium" direction="up" className="translate-y-8" onImageClick={onImageClick} />
+          <MarqueeColumn images={tabletCol2} speed="slow" direction="down" className="translate-y-0" onImageClick={onImageClick} />
+          <MarqueeColumn images={tabletCol3} speed="fast" direction="up" className="-translate-y-8" onImageClick={onImageClick} />
+          <MarqueeColumn images={tabletCol4} speed="fast" direction="down" className="-translate-y-8" onImageClick={onImageClick} />
+          <MarqueeColumn images={tabletCol5} speed="medium" direction="up" className="translate-y-0" onImageClick={onImageClick} />
+          <MarqueeColumn images={tabletCol6} speed="slow" direction="down" className="translate-y-8" onImageClick={onImageClick} />
         </div>
 
-        {/* DESKTOP GRID LAYOUT (10 Columns) - Staggered Canopy Arch as shown in Screenshot 1 */}
+        {/* DESKTOP GRID LAYOUT (10 Columns) */}
         <div className="hidden lg:grid grid-cols-10 gap-4 w-full select-none">
-          <MarqueeColumn images={col1Images} speed="slow" direction="up" className="translate-y-[100px]" />
-          <MarqueeColumn images={col2Images} speed="medium" direction="down" className="translate-y-[50px]" />
-          <MarqueeColumn images={col3Images} speed="slow" direction="up" className="translate-y-[10px]" />
-          <MarqueeColumn images={col4Images} speed="fast" direction="down" className="translate-y-[-20px]" />
-          <MarqueeColumn images={col5Images} speed="medium" direction="up" className="translate-y-[-30px]" />
-          <MarqueeColumn images={col6Images} speed="medium" direction="down" className="translate-y-[-30px]" />
-          <MarqueeColumn images={col7Images} speed="fast" direction="up" className="translate-y-[-20px]" />
-          <MarqueeColumn images={col8Images} speed="slow" direction="down" className="translate-y-[10px]" />
-          <MarqueeColumn images={col9Images} speed="medium" direction="up" className="translate-y-[50px]" />
-          <MarqueeColumn images={col10Images} speed="slow" direction="down" className="translate-y-[100px]" />
+          <MarqueeColumn images={col1Images} speed="slow" direction="up" className="translate-y-[100px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col2Images} speed="medium" direction="down" className="translate-y-[50px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col3Images} speed="slow" direction="up" className="translate-y-[10px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col4Images} speed="fast" direction="down" className="translate-y-[-20px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col5Images} speed="medium" direction="up" className="translate-y-[-30px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col6Images} speed="medium" direction="down" className="translate-y-[-30px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col7Images} speed="fast" direction="up" className="translate-y-[-20px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col8Images} speed="slow" direction="down" className="translate-y-[10px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col9Images} speed="medium" direction="up" className="translate-y-[50px]" onImageClick={onImageClick} />
+          <MarqueeColumn images={col10Images} speed="slow" direction="down" className="translate-y-[100px]" onImageClick={onImageClick} />
         </div>
 
       </div>
