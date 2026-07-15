@@ -1,9 +1,15 @@
 import React from "react";
+import MerchandiseSection from "./_components/MerchandiseSection";
+import BottomGallery from "./_components/BottomGallery";
 
 const ShopPage = () => {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center bg-[#0D0D0D]">
-      <h1 className="text-4xl font-outfit font-bold text-white">Shop Page</h1>
+    <div className="min-h-screen bg-[#050505] flex flex-col">
+      {/* Section 1: Merchandise Gallery */}
+      <MerchandiseSection />
+
+      {/* Section 2: Bottom Gallery Showcase */}
+      <BottomGallery />
     </div>
   );
 };

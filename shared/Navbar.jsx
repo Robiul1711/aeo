@@ -50,7 +50,7 @@ const Navbar = () => {
         { name: "Careers", href: "/contact/careers" },
       ],
     },
-    // { name: "Shop", href: "/shop" },
+    { name: "Shop", href: "/shop" },
   ];
 
   const checkIsActive = (href) => {
