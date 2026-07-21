@@ -5,6 +5,11 @@ import EventsList from "./_components/EventsList";
 import StoriesCarousel from "./_components/StoriesCarousel";
 import ExperienceForm from "./_components/ExperienceForm";
 
+export const metadata = {
+  title: "Pariah Design House | Experiential Art Bar Events",
+  description: "Pariah Design House is a London-based experiential studio specialising in Art Bar pop-up events.",
+};
+
 const page = () => {
   return (
     <>

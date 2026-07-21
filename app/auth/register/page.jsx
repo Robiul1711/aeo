@@ -59,7 +59,10 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <>
+      <title>Register | Pariah Design House</title>
+      <meta name="description" content="Create a Pariah Design House account to book experiential pop-up art bar events." />
+      <div className="flex flex-col items-center w-full">
       <h1 className="text-[32px] font-bold text-white mb-2 text-center font-outfit">
         Create Your Account
       </h1>
@@ -232,6 +235,7 @@ const RegisterPage = () => {
         </Link>
       </p>
     </div>
+    </>
   );
 };
 

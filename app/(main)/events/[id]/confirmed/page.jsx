@@ -78,7 +78,10 @@ const BookingConfirmedPage = ({ params, searchParams }) => {
   const bookingId = `#SD-2026-${Math.floor(10000 + (id ? parseInt(id) * 3571 : 78421) % 90000)}`;
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col items-center justify-center pt-10 pb-24 px-6">
+    <>
+      <title>Booking Confirmed - {event.title} | Pariah Design House</title>
+      <meta name="description" content="Your booking has been successfully confirmed at Pariah Design House." />
+      <div className="min-h-screen bg-[#0D0D0D] text-white flex flex-col items-center justify-center pt-10 pb-24 px-6">
       
       {/* Top Glowing Checkmark Circle */}
       <div className="w-16 h-16 rounded-full border-2 border-primary bg-primary/10 flex items-center justify-center text-primary shadow-[0_0_25px_rgba(243,183,5,0.25)] select-none">
@@ -199,6 +202,7 @@ const BookingConfirmedPage = ({ params, searchParams }) => {
       </Link>
 
     </div>
+    </>
   );
 };
 

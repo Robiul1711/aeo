@@ -3,18 +3,30 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import { removeUser } from "@/redux/slices/authSlice";
 import { GlowButton } from "@/components/common/GlowButton";
 import Logo from "@/assets/logo.png";
 import { FiChevronDown } from "react-icons/fi";
+import { useGetFooterCMSQuery } from "@/redux/api/apiSlice";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { data: response, isLoading } = useGetFooterCMSQuery();
+  const header_image = response?.data?.content?.header_image;
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentHash, setCurrentHash] = useState("");
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+
     // Set initial hash
     setCurrentHash(window.location.hash);
 
@@ -38,10 +50,16 @@ const Navbar = () => {
     };
   }, []);
 
+  const handleLogout = () => {
+    dispatch(removeUser());
+    toast.success("Logged out successfully");
+    router.push("/");
+  };
+
   const navItems = [
     { name: "Home", href: "/" },
     { name: "About", href: "/#about" },
-    { name: "Events", href: "/#events" },
+    { name: "Events", href: "/events" },
     {
       name: "Contact",
       href: "/contact",
@@ -66,17 +84,22 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="w-full bg-[#0D0D0D]/40 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
+      <header className="w-full bg-[#0D0D0D]/40 backdrop-blur-md border-b border-white/5 sticky md:py-2 top-0 z-50">
         <div className="section-padding-x h-20 flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src={Logo}
-              alt="Pariah Logo"
-              height={50}
-              className="h-10 md:h-12 w-auto object-contain"
-              priority
-            />
+            {isLoading ? (
+              <div className="w-20 md:w-24 lg:w-28 h-10 md:h-12 lg:h-14 xl:h-20 bg-white/10 rounded-[8px] animate-pulse" />
+            ) : (
+              <Image
+                src={header_image || Logo}
+                alt="Pariah Logo"
+                width={200}
+                height={50}
+                className="h-12 lg:h-14 xl:h-20 w-auto object-contain"
+                priority
+              />
+            )}
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -158,7 +181,11 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:block">
-            <GlowButton href="/auth/register">Register</GlowButton>
+            {mounted && isAuthenticated ? (
+              <GlowButton onClick={handleLogout}>Log Out</GlowButton>
+            ) : (
+              <GlowButton href="/auth/login">Login</GlowButton>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -196,12 +223,17 @@ const Navbar = () => {
       >
         {/* Drawer Logo */}
         <div className="mb-4">
-          <Image
-            src={Logo}
-            alt="Pariah Logo"
-            height={40}
-            className="h-8 w-auto object-contain"
-          />
+          {isLoading ? (
+            <div className="w-20 h-8 bg-white/10 rounded-[6px] animate-pulse" />
+          ) : (
+            <Image
+              src={header_image || Logo}
+              alt="Pariah Logo"
+              width={160}
+              height={40}
+              className="h-8 w-auto object-contain"
+            />
+          )}
         </div>
 
         <nav className="flex flex-col gap-6">
@@ -256,9 +288,15 @@ const Navbar = () => {
         </nav>
 
         <div className="mt-auto" onClick={() => setIsMobileMenuOpen(false)}>
-          <GlowButton href="/auth/register" className="w-full text-center">
-            Register
-          </GlowButton>
+          {mounted && isAuthenticated ? (
+            <GlowButton onClick={handleLogout} className="w-full text-center">
+              Log Out
+            </GlowButton>
+          ) : (
+            <GlowButton href="/auth/login" className="w-full text-center">
+              Login
+            </GlowButton>
+          )}
         </div>
       </div>
     </>

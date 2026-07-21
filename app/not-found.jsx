@@ -9,7 +9,10 @@ const NotFoundPage = () => {
   const router = useRouter();
 
   return (
-    <div className="relative min-h-screen bg-[#0D0D0D] flex flex-col justify-center items-center px-4 overflow-hidden font-outfit">
+    <>
+      <title>Page Not Found | Pariah Design House</title>
+      <meta name="description" content="The page you are looking for does not exist." />
+      <div className="relative min-h-screen bg-[#0D0D0D] flex flex-col justify-center items-center px-4 overflow-hidden font-outfit">
       {/* Ambient background glows */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none animate-pulse duration-6000" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none animate-pulse duration-8000" />
@@ -37,7 +40,7 @@ const NotFoundPage = () => {
         </h2>
 
         <p className="text-white/60 text-sm sm:text-base leading-relaxed mb-8 max-w-[440px]">
-          We looked everywhere, but the page you are trying to access doesn't exist or has been moved to another URL.
+          We looked everywhere, but the page you are trying to access doesn&apos;t exist or has been moved to another URL.
         </p>
 
         {/* Mock Search Bar (Design Element) */}
@@ -78,6 +81,7 @@ const NotFoundPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

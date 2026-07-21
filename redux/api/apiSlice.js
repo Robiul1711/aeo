@@ -5,6 +5,8 @@ export const apiSlice = createApi({
   reducerPath: "api",
   refetchOnFocus: true,
   refetchOnReconnect: true,
+  refetchOnMountOrArgChange: true,
+  keepUnusedDataFor: 0,
   baseQuery: baseQueryWithInterceptor,
   tagTypes: ["User", "Products", "Orders"],
   endpoints: builder => ({
@@ -137,9 +139,10 @@ export const apiSlice = createApi({
     }),
 
     getEvents: builder.query({
-      query: () => ({
+      query: (params) => ({
         url: "/events",
         method: "GET",
+        params,
       }),
     }),
 
@@ -153,6 +156,34 @@ export const apiSlice = createApi({
     getSeatsByEventId: builder.query({
       query: eventId => ({
         url: `/events/${eventId}/seats`,
+        method: "GET",
+      }),
+    }),
+
+    getShopCMS: builder.query({
+      query: () => ({
+        url: "/shop/cms",
+        method: "GET",
+      }),
+    }),
+
+    getShopGallery: builder.query({
+      query: () => ({
+        url: "/shop/gallery",
+        method: "GET",
+      }),
+    }),
+
+    getShopProducts: builder.query({
+      query: () => ({
+        url: "/shop/products",
+        method: "GET",
+      }),
+    }),
+
+    getProductDetails: builder.query({
+      query: (id) => ({
+        url: `/shop/products/${id}`,
         method: "GET",
       }),
     }),
@@ -228,6 +259,10 @@ export const {
   useGetEventsQuery,
   useGetEventBySlugQuery,
   useGetSeatsByEventIdQuery,
+  useGetShopCMSQuery,
+  useGetShopGalleryQuery,
+  useGetShopProductsQuery,
+  useGetProductDetailsQuery,
   useGetHomePageCMSQuery,
   useGetFooterCMSQuery,
   useGetPrivacyPolicyCMSQuery,

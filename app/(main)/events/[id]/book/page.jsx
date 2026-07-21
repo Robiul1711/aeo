@@ -235,7 +235,10 @@ const SeatBookingPage = ({ params }) => {
   const rows = Object.keys(seatsByRow).sort();
 
   return (
-    <div className="pt-10 pb-24 section-padding-x">
+    <>
+      <title>{event?.title ? `Book Seats - ${event.title} | Pariah Design House` : 'Book Seats | Pariah Design House'}</title>
+      <meta name="description" content="Select and book your seats for Pariah Design House pop-up art bar events." />
+      <div className="pt-10 pb-24 section-padding-x">
       <div className=" flex flex-col gap-8">
         
         {/* Header Title for SEO / Screen Identifiers */}
@@ -414,6 +417,7 @@ const SeatBookingPage = ({ params }) => {
 
       </div>
     </div>
+    </>
   );
 };
 

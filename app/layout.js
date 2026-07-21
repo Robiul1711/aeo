@@ -2,6 +2,7 @@ import "./globals.css";
 import ReduxProvider from "@/provider/ReduxProvider";
 import { Cormorant_Garamond } from "next/font/google";
 import ToastProvider from "@/provider/ToastProvider";
+import ScrollToTop from "@/components/common/ScrollToTop";
 
 // Fonts
 const cormorant = Cormorant_Garamond({
@@ -13,10 +14,12 @@ const cormorant = Cormorant_Garamond({
 
 // Metadata
 export const metadata = {
-  title: "Starter Next.js",
-  description: "A starter template for Next.js projects with Redux",
+  title: "Pariah Design House",
+  description: "Pariah Design House is a London-based experiential studio specialising in Art Bar pop-up events.",
   icons: {
     icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -26,6 +29,7 @@ export default function RootLayout({ children }) {
       <body>
         <ReduxProvider>
           <ToastProvider />
+          <ScrollToTop />
           {children}
         </ReduxProvider>
       </body>

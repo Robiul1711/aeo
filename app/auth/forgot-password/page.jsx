@@ -39,8 +39,11 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <h1 className="text-[32px] font-bold text-white mb-2 text-center">
+    <>
+      <title>Forgot Password | Pariah Design House</title>
+      <meta name="description" content="Recover your Pariah Design House account password." />
+      <div className="flex flex-col items-center w-full">
+        <h1 className="text-[32px] font-bold text-white mb-2 text-center">
         Forget Password
       </h1>
       <p className="text-sm text-white/60 text-center mb-8 max-w-[420px] leading-relaxed">
@@ -76,6 +79,7 @@ const ForgotPasswordPage = () => {
         </button>
       </form>
     </div>
+    </>
   );
 };
 

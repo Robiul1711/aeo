@@ -201,6 +201,8 @@ const VerifyOtpForm = () => {
 const VerifyOtpPage = () => {
   return (
     <Suspense fallback={<div className="text-center text-white">Loading OTP page...</div>}>
+      <title>Verify OTP | Pariah Design House</title>
+      <meta name="description" content="Verify your account with OTP code." />
       <VerifyOtpForm />
     </Suspense>
   );

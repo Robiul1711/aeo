@@ -161,7 +161,7 @@ const LoginForm = () => {
 
       {/* Footer */}
       <p className="text-sm text-white/60 mt-8 font-outfit">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link
           href="/auth/register"
           className="text-primary hover:underline font-semibold"
@@ -175,6 +175,8 @@ const LoginForm = () => {
 
 const LoginPage = () => (
   <Suspense fallback={null}>
+    <title>Login | Pariah Design House</title>
+    <meta name="description" content="Log in to your Pariah Design House account." />
     <LoginForm />
   </Suspense>
 );

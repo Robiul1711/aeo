@@ -127,7 +127,10 @@ const CheckoutPage = ({ params, searchParams }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white pt-6 pb-24 section-padding-x">
+    <>
+      <title>{event?.title ? `Checkout - ${event.title} | Pariah Design House` : 'Checkout | Pariah Design House'}</title>
+      <meta name="description" content="Checkout and complete your booking for Pariah Design House pop-up art bar events." />
+      <div className="min-h-screen bg-[#0D0D0D] text-white pt-6 pb-24 section-padding-x">
       <div className="max-w-7xl mx-auto flex flex-col gap-8">
         
         {/* Progress Steps Header */}
@@ -370,6 +373,7 @@ const CheckoutPage = ({ params, searchParams }) => {
 
       </div>
     </div>
+    </>
   );
 };
 

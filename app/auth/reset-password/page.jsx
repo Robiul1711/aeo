@@ -147,6 +147,8 @@ const ResetPasswordForm = () => {
 const ResetPasswordPage = () => {
   return (
     <Suspense fallback={<div className="text-center text-white">Loading reset page...</div>}>
+      <title>Reset Password | Pariah Design House</title>
+      <meta name="description" content="Reset your Pariah Design House account password." />
       <ResetPasswordForm />
     </Suspense>
   );

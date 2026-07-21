@@ -10,12 +10,12 @@ import { useGetHomePageCMSQuery } from "@/redux/api/apiSlice";
 const ScrollWord = ({ children, progress, index, total, className }) => {
   const start = index / total;
   const end = Math.min(1, (index + 1.5) / total);
-  
+
   // Transition color from secondary-gray to white
   const color = useTransform(
     progress,
     [start, end],
-    ["rgba(237, 232, 223, 0.60)", "rgba(255, 255, 255, 1)"]
+    ["rgba(237, 232, 223, 0.60)", "rgba(255, 255, 255, 1)"],
   );
 
   return (
@@ -28,20 +28,16 @@ const ScrollWord = ({ children, progress, index, total, className }) => {
 const ScrollIcon = ({ progress, index, total, className }) => {
   const start = index / total;
   const end = Math.min(1, (index + 1.5) / total);
-  
+
   // Transition SVG fill from secondary-gray to white
   const fill = useTransform(
     progress,
     [start, end],
-    ["rgba(237, 232, 223, 0.60)", "rgba(255, 255, 255, 1)"]
+    ["rgba(237, 232, 223, 0.60)", "rgba(255, 255, 255, 1)"],
   );
 
   return (
-    <motion.svg
-      style={{ fill }}
-      className={className}
-      viewBox="0 0 24 24"
-    >
+    <motion.svg style={{ fill }} className={className} viewBox="0 0 24 24">
       <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
     </motion.svg>
   );
@@ -49,17 +45,20 @@ const ScrollIcon = ({ progress, index, total, className }) => {
 
 const AboutSection = () => {
   const containerRef = useRef(null);
-  
+
   const { data: response } = useGetHomePageCMSQuery();
   const mainAbout = response?.data?.content?.main_about;
 
   const aboutTitle = mainAbout?.about_title || "About";
-  const aboutSubDescription = mainAbout?.about_sub_description || "Pariah Is A Creative Hospitality Concept That Elevates Craft Through Immersive Pop-Up Experiences Designed For The Perfect Night Out.";
-  
+  const aboutSubDescription =
+    mainAbout?.about_sub_description ||
+    "Pariah Is A Creative Hospitality Concept That Elevates Craft Through Immersive Pop-Up Experiences Designed For The Perfect Night Out.";
+
   // Construct dynamic slides from CMS or use local assets as fallback
-  const slides = mainAbout?.slides && mainAbout.slides.length > 0
-    ? mainAbout.slides.map(s => s.image)
-    : [AboutBg, AboutNeonBg];
+  const slides =
+    mainAbout?.slides && mainAbout.slides.length > 0
+      ? mainAbout.slides.map((s) => s.image)
+      : [AboutBg, AboutNeonBg];
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -73,27 +72,29 @@ const AboutSection = () => {
   }, [slides.length]);
 
   const descriptionParagraphs = mainAbout?.about_description
-    ? mainAbout.about_description.split("\n").filter(p => p.trim() !== "")
+    ? mainAbout.about_description.split("\n").filter((p) => p.trim() !== "")
     : [
         "Pariah Design House Is A London-Based Experiential Studio Specialising In Art Bar Pop-Up Events. We Design Temporary Environments Where Art, Architecture, And Hospitality Converge — Spaces That Exist For One Night And Live In Memory Indefinitely.",
-        "Each Event Is Commissioned As A Complete Aesthetic Programme: The Art, The Space, The Bar, The Light, The Sound. Nothing Is Incidental. Everything Is Designed To Be Felt."
+        "Each Event Is Commissioned As A Complete Aesthetic Programme: The Art, The Space, The Bar, The Light, The Sound. Nothing Is Incidental. Everything Is Designed To Be Felt.",
       ];
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 0.85", "end 0.65"]
+    offset: ["start 0.85", "end 0.65"],
   });
 
   const words = aboutSubDescription.split(" ");
   const totalElements = words.length + 1; // +1 to account for the star icon
 
   return (
-    <section id="about" className="w-full bg-[#050505] py-20 md:py-28 section-padding-x flex flex-col gap-10 md:gap-20">
+    <section
+      id="about"
+      className="w-full bg-[#050505] py-20 md:py-28 section-padding-x flex flex-col gap-10 md:gap-20"
+    >
       {/* Top Grid: Image & Main About Text */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left Column: Image Slideshow Container */}
         <div className="relative w-full aspect-4/5 max-w-[480px] mx-auto rounded-[16px] overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-white/5 bg-[#111]">
-          
           {/* Slides */}
           {slides.map((image, index) => (
             <div
@@ -121,8 +122,8 @@ const AboutSection = () => {
                   key={index}
                   onClick={() => setCurrentSlide(index)}
                   className={`w-2 h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                    index === currentSlide 
-                      ? "bg-primary scale-125 shadow-[0_0_8px_#E5A93B]" 
+                    index === currentSlide
+                      ? "bg-primary scale-125 shadow-[0_0_8px_#E5A93B]"
                       : "bg-white/40 hover:bg-white/70"
                   }`}
                 />
@@ -147,20 +148,22 @@ const AboutSection = () => {
       {/* Bottom Section: Centered Logo and Concept Statement */}
       <div className="max-w-4xl mx-auto w-full flex flex-col items-center text-center px-4">
         {/* Concept Statement Text */}
-        <h3 
+        <h3
           ref={containerRef}
           className="font-outfit text-[20px] sm:text-[24px] md:text-[28px] font-normal leading-relaxed tracking-wide max-w-3xl flex justify-center items-center flex-wrap gap-x-2 gap-y-1"
         >
           {words.map((word, idx) => {
-            const isCraft = word.toLowerCase().replace(/[^a-z]/g, "") === "craft";
-            const isExperiences = word.toLowerCase().replace(/[^a-z]/g, "") === "experiences";
+            const isCraft =
+              word.toLowerCase().replace(/[^a-z]/g, "") === "craft";
+            const isExperiences =
+              word.toLowerCase().replace(/[^a-z]/g, "") === "experiences";
             return (
               <React.Fragment key={idx}>
                 <ScrollWord
                   progress={scrollYProgress}
                   index={idx}
                   total={totalElements}
-                  className={`inline-block mr-2 ${isCraft ? 'font-semibold' : ''}`}
+                  className={`inline-block mr-2 ${isCraft ? "font-semibold" : ""}`}
                 >
                   {word}
                 </ScrollWord>
