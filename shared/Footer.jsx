@@ -19,13 +19,14 @@ const Footer = () => {
   const rightsReserved =
     footerData?.rights_reserved || "© 2026 Pariah. All rights reserved.";
 
-  const socialLinks = {
-    facebook: footerData?.social_links?.facebook || "#",
-    instagram: footerData?.social_links?.instagram || "#",
-    twitter: footerData?.social_links?.twitter || "#",
-    youtube: footerData?.social_links?.youtube || "#",
-    linkedin: footerData?.social_links?.linkedin || "#",
-  };
+  const socialLinks = [
+    { name: "Facebook", url: footerData?.social_links?.facebook },
+    { name: "Instagram", url: footerData?.social_links?.instagram },
+    { name: "Twitter", url: footerData?.social_links?.twitter },
+    { name: "YouTube", url: footerData?.social_links?.youtube },
+    { name: "LinkedIn", url: footerData?.social_links?.linkedin },
+    { name: "Pinterest", url: footerData?.social_links?.pinterest },
+  ].filter((link) => link.url);
 
   return (
     <footer className="w-full relative bg-[#050505] border-t border-white/5 pt-16 pb-[25vw] md:pb-[18vw] flex flex-col justify-between overflow-hidden">
@@ -104,63 +105,27 @@ const Footer = () => {
           </div>
 
           {/* Social */}
-          <div className="flex flex-col gap-5">
-            <h4 className="text-white font-outfit text-[18px] font-semibold tracking-wide">
-              Social
-            </h4>
-            <ul className="flex flex-col gap-3 text-secondary-gray text-[15px] font-medium font-outfit">
-              <li>
-                <a
-                  href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  Facebook
-                </a>
-              </li>
-              <li>
-                <a
-                  href={socialLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  Instagram
-                </a>
-              </li>
-              <li>
-                <a
-                  href={socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a
-                  href={socialLinks.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  YouTube
-                </a>
-              </li>
-              <li>
-                <a
-                  href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors duration-200"
-                >
-                  LinkedIn
-                </a>
-              </li>
-            </ul>
-          </div>
+          {socialLinks.length > 0 && (
+            <div className="flex flex-col gap-5">
+              <h4 className="text-white font-outfit text-[18px] font-semibold tracking-wide">
+                Social
+              </h4>
+              <ul className="flex flex-col gap-3 text-secondary-gray text-[15px] font-medium font-outfit">
+                {socialLinks.map((link) => (
+                  <li key={link.name}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Legal */}
           <div className="flex flex-col gap-5">

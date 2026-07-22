@@ -30,7 +30,7 @@ const BottomGallery = ({ onImageClick }) => {
             {Array.from({ length: 8 }).map((_, idx) => (
               <div
                 key={idx}
-                className="aspect-4/5 w-full rounded-[24px] bg-white/10 border border-white/5 animate-pulse"
+                className="aspect-4/5 w-full rounded-3xl bg-white/10 border border-white/5 animate-pulse"
               />
             ))}
           </div>
@@ -40,7 +40,7 @@ const BottomGallery = ({ onImageClick }) => {
               <div
                 key={item.id || idx}
                 onClick={() => onImageClick && onImageClick(item)}
-                className="relative aspect-4/5 w-full overflow-hidden rounded-[24px] border border-white/5 group shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer bg-[#111]"
+                className="relative aspect-4/5 w-full overflow-hidden rounded-3xl border border-white/5 group shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer bg-[#111]"
               >
                 <Image
                   src={item?.image || item?.src || item}

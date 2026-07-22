@@ -139,7 +139,7 @@ const AboutSection = () => {
           </h2>
           <div className="flex flex-col gap-5 text-secondary-gray font-outfit text-[15px] md:text-[16px] leading-relaxed tracking-wider">
             {descriptionParagraphs.map((para, idx) => (
-              <p key={idx}>{para}</p>
+              <p key={idx} dangerouslySetInnerHTML={{ __html: para }} />
             ))}
           </div>
         </div>

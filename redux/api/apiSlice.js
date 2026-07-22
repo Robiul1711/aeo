@@ -216,6 +216,13 @@ export const apiSlice = createApi({
       }),
     }),
 
+    getContactUsCMS: builder.query({
+      query: () => ({
+        url: "/cms-pages/contact-us",
+        method: "GET",
+      }),
+    }),
+
     setupBooking: builder.mutation({
       query: (body) => ({
         url: "/bookings/setup",
@@ -267,6 +274,7 @@ export const {
   useGetFooterCMSQuery,
   useGetPrivacyPolicyCMSQuery,
   useGetTermsOfServiceCMSQuery,
+  useGetContactUsCMSQuery,
   useSetupBookingMutation,
   useConfirmBookingCheckoutMutation,
   useGetBookingByReferenceQuery,

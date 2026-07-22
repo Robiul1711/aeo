@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { FiUser, FiMail, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { useSubmitContactInquiryMutation } from "@/redux/api/apiSlice";
+import { useSubmitContactInquiryMutation, useGetContactUsCMSQuery } from "@/redux/api/apiSlice";
 
 // Import local assets
 import HeaderBg from "@/assets/about.png";
@@ -13,6 +13,16 @@ import HeaderBg from "@/assets/about.png";
 const CollaboratePageClient = () => {
   const [agree, setAgree] = useState(false);
   const [submitContactInquiry, { isLoading }] = useSubmitContactInquiryMutation();
+  const { data: response } = useGetContactUsCMSQuery();
+  const contactCMSContent = response?.data?.content;
+
+  const collaborateTitle = contactCMSContent?.collaborate_title || "Collaborate With Pariah";
+  const collaborateSubtitle =
+    contactCMSContent?.collaborate_subtitle ||
+    "We love collaborating with artists, brands, and businesses to create meaningful and memorable experiences.";
+  const collaborateBottomText =
+    contactCMSContent?.collaborate_bottom_text ||
+    "I Understand That A 50% Non-Refundable Deposit Is Required Before Any Work Begins.";
 
   const {
     register,
@@ -93,11 +103,12 @@ const CollaboratePageClient = () => {
         {/* Text Overlay */}
         <div className="relative z-10 text-center max-w-4xl mx-auto flex flex-col gap-4 px-4 mt-12 sm:mt-16">
           <h1 className="text-white font-playfair text-4xl sm:text-5xl md:text-6xl font-normal tracking-wide leading-tight">
-            Collaborate With Pariah
+            {collaborateTitle}
           </h1>
-          <p className="text-white/85 font-outfit text-[14px] sm:text-[16px] md:text-[18px] max-w-2xl mx-auto font-light leading-relaxed">
-            We love collaborating with artists, brands, and businesses to create meaningful and memorable experiences.
-          </p>
+          <div
+            className="text-white/85 font-outfit text-[14px] sm:text-[16px] md:text-[18px] max-w-2xl mx-auto font-light leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: collaborateSubtitle }}
+          />
         </div>
       </div>
 
@@ -353,9 +364,10 @@ const CollaboratePageClient = () => {
                     {agree && <FiCheck className="w-3.5 h-3.5 stroke-[3px]" />}
                   </div>
                 </div>
-                <span className="text-[13px] sm:text-[14px] text-white/60 font-outfit leading-relaxed text-left">
-                  I Understand That A 50% Non-Refundable Deposit Is Required Before Any Work Begins.
-                </span>
+                <span
+                  className="text-[13px] sm:text-[14px] text-white/60 font-outfit leading-relaxed text-left"
+                  dangerouslySetInnerHTML={{ __html: collaborateBottomText }}
+                />
               </label>
             </div>
 

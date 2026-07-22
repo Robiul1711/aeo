@@ -7,25 +7,43 @@ import { FiInfo } from "react-icons/fi";
 import { useGetProductDetailsQuery } from "@/redux/api/apiSlice";
 
 const ProductModal = ({ product, open, onClose }) => {
-  const { data: response, isLoading, isFetching } = useGetProductDetailsQuery(product?.id, {
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+  } = useGetProductDetailsQuery(product?.id, {
     skip: !product?.id,
   });
 
   if (!product) return null;
 
   // Check if fetched data matches the current product ID
-  const isDataMatching = response?.data && String(response.data.id) === String(product.id);
+  const isDataMatching =
+    response?.data && String(response.data.id) === String(product.id);
   const showSkeleton = isLoading || isFetching || !isDataMatching;
 
   const productDetails = isDataMatching ? response.data : product;
 
-  const title = productDetails.title || productDetails.name || product.name || product.title;
+  const title =
+    productDetails.title ||
+    productDetails.name ||
+    product.name ||
+    product.title;
   const image = productDetails.image || product.image;
   const tag = productDetails.tag || "In-Store Exclusive";
   const rawPrice = productDetails.price || product.price;
-  const price = rawPrice ? (String(rawPrice).includes("$") ? rawPrice : `$${rawPrice}`) : "";
-  const description = productDetails.short_description || productDetails.description || product.description;
-  const note = productDetails.note || "This item is part of our physical collection at Pariah and cannot be purchased online. Visit us to purchase in person or get in touch for details.";
+  const price = rawPrice
+    ? String(rawPrice).includes("$")
+      ? rawPrice
+      : `$${rawPrice}`
+    : "";
+  const description =
+    productDetails.short_description ||
+    productDetails.description ||
+    product.description;
+  const note =
+    productDetails.note ||
+    "This item is part of our physical collection at Pariah and cannot be purchased online. Visit us to purchase in person or get in touch for details.";
 
   return (
     <Modal
