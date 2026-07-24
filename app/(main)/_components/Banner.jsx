@@ -3,19 +3,41 @@ import React from "react";
 import Image from "next/image";
 import BannerBg from "@/assets/banner.png";
 import LogoImg from "@/assets/logoblack.png";
+import { useGetHomePageCMSQuery } from "@/redux/api/apiSlice";
+import { BannerSkeleton } from "@/components/common/Skeleton";
 
 const Banner = () => {
+  const { data: response, isLoading } = useGetHomePageCMSQuery();
+  const bannerContent = response?.data?.content?.main_about;
+  console.log(bannerContent)
+  if(isLoading) {
+    return <BannerSkeleton />
+  }
+  const bgMedia = bannerContent?.bg_image || BannerBg;
+  const isVideo = typeof bgMedia === 'string' && (bgMedia.toLowerCase().endsWith('.mp4') || bgMedia.toLowerCase().includes('.mp4?'));
+
   return (
     <section className="relative w-full h-[85vh] md:h-screen flex flex-col justify-center items-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background Image/Video */}
       <div className="absolute inset-0 -z-20">
-        <Image
-          src={BannerBg}
-          alt="Pariah Banner Background"
-          fill
-          className="object-cover object-center"
-          priority
-        />
+        {isVideo ? (
+          <video
+            src={bgMedia}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover object-center"
+          />
+        ) : (
+          <Image
+            src={bgMedia}
+            alt="Pariah Banner Background"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+        )}
       </div>
 
       {/* Dark Overlay */}
@@ -24,9 +46,9 @@ const Banner = () => {
       {/* Content Container */}
       <div className="flex flex-col items-center gap-8 px-6 text-center select-none">
         {/* Large Logo */}
-        <div className="w-[280px] sm:w-[380px] md:w-[480px] h-auto relative animate-fade-in">
+        <div className="w-70 sm:w-95 md:w-120 h-auto relative animate-fade-in">
           <Image
-            src={LogoImg}
+            src={bannerContent?.hero_image || LogoImg}
             alt="Pariah Logo"
             width={480}
             height={150}
@@ -34,8 +56,8 @@ const Banner = () => {
             priority
           />
         </div>
-        <p className="text-white font-outfit text-sm sm:text-base md:text-lg font-semibold tracking-wider transition-all duration-300 hover:scale-[1.05] active:scale-[0.95] shadow-lg border-none cursor-pointer">
-          Art Bar | Creative Hospitality
+        <p className="text-white font-outfit text-sm sm:text-base md:text-lg font-semibold tracking-wider transition-all duration-300 hover:scale-[1.05] active:scale-[0.95]  border-none">
+          {bannerContent?.hero_text || "Art Bar | Creative Hospitality"}
         </p>
         {/* Book Now Button */}
         <button
@@ -43,7 +65,7 @@ const Banner = () => {
             const el = document.getElementById("events");
             if (el) el.scrollIntoView({ behavior: "smooth" });
           }}
-          className="px-8 py-3.5 bg-white text-black hover:bg-white/95 rounded-[12px] font-outfit text-[17px] font-semibold tracking-wider transition-all duration-300 hover:scale-[1.05] active:scale-[0.95] shadow-lg border-none cursor-pointer"
+          className="px-8 py-3.5 bg-white text-black hover:bg-white/95 rounded-xl font-outfit text-[17px] font-semibold tracking-wider transition-all duration-300 hover:scale-[1.05] active:scale-[0.95] shadow-lg border-none cursor-pointer"
         >
           Book Now
         </button>

@@ -320,7 +320,7 @@ const EventDetailPageClient = ({ params }) => {
                           </span>
                         </div>
                         <span className="text-primary font-outfit font-bold text-[19px]">
-                          £{catPrice.toFixed(2)}
+                          ${catPrice.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -328,7 +328,7 @@ const EventDetailPageClient = ({ params }) => {
                           Service charge ({cat.service_charge_pct}%)
                         </span>
                         <span className="text-white/50 font-outfit text-[13px]">
-                          £{serviceCharge.toFixed(2)}
+                          ${serviceCharge.toFixed(2)}
                         </span>
                       </div>
                       <div className="border-t border-white/5 my-0.5" />
@@ -337,7 +337,7 @@ const EventDetailPageClient = ({ params }) => {
                           Total per seat
                         </span>
                         <span className="text-white font-outfit font-semibold text-[15px]">
-                          £{totalPerSeat.toFixed(2)}
+                          ${totalPerSeat.toFixed(2)}
                         </span>
                       </div>
                     </div>

@@ -18,15 +18,21 @@ const Footer = () => {
     "Pariah Design House is a London-based experiential studio specialising in Art Bar pop-up events.";
   const rightsReserved =
     footerData?.rights_reserved || "© 2026 Pariah. All rights reserved.";
+  const footerBottomLogo = footerData?.footer_bottom_logo || FooterLogo;
 
-  const socialLinks = [
-    { name: "Facebook", url: footerData?.social_links?.facebook },
-    { name: "Instagram", url: footerData?.social_links?.instagram },
-    { name: "Twitter", url: footerData?.social_links?.twitter },
-    { name: "YouTube", url: footerData?.social_links?.youtube },
-    { name: "LinkedIn", url: footerData?.social_links?.linkedin },
-    { name: "Pinterest", url: footerData?.social_links?.pinterest },
-  ].filter((link) => link.url);
+  const rawSocialLinks = footerData?.social_links;
+  const socialLinks = Array.isArray(rawSocialLinks)
+    ? rawSocialLinks
+        .map((link) => ({ name: link?.platform, url: link?.url }))
+        .filter((link) => link.url)
+    : [
+        { name: "Facebook", url: rawSocialLinks?.facebook },
+        { name: "Instagram", url: rawSocialLinks?.instagram },
+        { name: "Twitter", url: rawSocialLinks?.twitter },
+        { name: "YouTube", url: rawSocialLinks?.youtube },
+        { name: "LinkedIn", url: rawSocialLinks?.linkedin },
+        { name: "Pinterest", url: rawSocialLinks?.pinterest },
+      ].filter((link) => link.url);
 
   return (
     <footer className="w-full relative bg-[#050505] border-t border-white/5 pt-16 pb-[25vw] md:pb-[18vw] flex flex-col justify-between overflow-hidden">
@@ -162,8 +168,10 @@ const Footer = () => {
       {/* Big Logo Section (Bottom) */}
       <div className="w-full select-none pointer-events-none absolute bottom-0 left-0 right-0 z-0">
         <Image
-          src={FooterLogo}
+          src={footerBottomLogo}
           alt="Pariah Big Logo"
+          width={1920}
+          height={380}
           className="w-full h-auto object-cover object-bottom scale-y-105"
           priority
         />

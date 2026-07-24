@@ -134,7 +134,7 @@ const AboutSection = () => {
 
         {/* Right Column: Text Content */}
         <div className="flex flex-col gap-6 md:gap-8 max-w-xl mx-auto lg:mx-0">
-          <h2 className="text-white text-5xl md:text-6xl font-playfair tracking-wide font-normal">
+          <h2 className="text-white text-5xl md:text-6xl font-playfair tracking-wide font-normal text-center">
             {aboutTitle}
           </h2>
           <div className="flex flex-col gap-5 text-secondary-gray font-outfit text-[15px] md:text-[16px] leading-relaxed tracking-wider">

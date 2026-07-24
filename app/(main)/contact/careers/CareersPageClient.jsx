@@ -3,25 +3,31 @@
 import React from "react";
 import Image from "next/image";
 import { useGetContactUsCMSQuery } from "@/redux/api/apiSlice";
+import { CareersSkeleton } from "@/components/common/Skeleton";
 
 // Import local assets
 import HeaderBg from "@/assets/about.png";
 
 const CareersPageClient = () => {
-  const { data: response } = useGetContactUsCMSQuery();
+  const { data: response, isLoading } = useGetContactUsCMSQuery();
   const contactCMSContent = response?.data?.content;
+
+  if (isLoading) {
+    return <CareersSkeleton />;
+  }
 
   const careerTitle = contactCMSContent?.career_title || "Join Our Team";
   const careerDescription =
     contactCMSContent?.career_description ||
     "Thank you for your interest in a career at Pariah. We are always looking for passionate individuals who share our commitment to the arts and exceptional hospitality. As part of our team, you'll have the opportunity to work in a creative, collaborative environment that values innovation, growth, and meaningful guest experiences. We believe in nurturing talent and providing opportunities for both personal and professional development. We look forward to learning more about you.";
   const contactEmail = contactCMSContent?.contact_info?.email || "careers@pariah.com";
+  const careerBg = contactCMSContent?.career_bg_image || HeaderBg;
 
   return (
     <div className="relative min-h-[calc(100vh-80px)] flex items-center justify-center px-6 overflow-hidden bg-[#0D0D0D]">
       {/* Background Image */}
       <Image
-        src={HeaderBg}
+        src={careerBg}
         alt="Join Our Team"
         fill
         className="object-cover object-center opacity-65"

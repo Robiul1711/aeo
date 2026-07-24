@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { FiUser, FiMail, FiCheck } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useSubmitContactInquiryMutation, useGetContactUsCMSQuery } from "@/redux/api/apiSlice";
+import { CollaborateSkeleton } from "@/components/common/Skeleton";
 
 // Import local assets
 import HeaderBg from "@/assets/about.png";
@@ -13,16 +14,8 @@ import HeaderBg from "@/assets/about.png";
 const CollaboratePageClient = () => {
   const [agree, setAgree] = useState(false);
   const [submitContactInquiry, { isLoading }] = useSubmitContactInquiryMutation();
-  const { data: response } = useGetContactUsCMSQuery();
+  const { data: response, isLoading: isLoadingCMS } = useGetContactUsCMSQuery();
   const contactCMSContent = response?.data?.content;
-
-  const collaborateTitle = contactCMSContent?.collaborate_title || "Collaborate With Pariah";
-  const collaborateSubtitle =
-    contactCMSContent?.collaborate_subtitle ||
-    "We love collaborating with artists, brands, and businesses to create meaningful and memorable experiences.";
-  const collaborateBottomText =
-    contactCMSContent?.collaborate_bottom_text ||
-    "I Understand That A 50% Non-Refundable Deposit Is Required Before Any Work Begins.";
 
   const {
     register,
@@ -46,6 +39,19 @@ const CollaboratePageClient = () => {
       howHeard: "",
     }
   });
+
+  if (isLoadingCMS) {
+    return <CollaborateSkeleton />;
+  }
+
+  const collaborateTitle = contactCMSContent?.collaborate_title || "Collaborate With Pariah";
+  const collaborateSubtitle =
+    contactCMSContent?.collaborate_subtitle ||
+    "We love collaborating with artists, brands, and businesses to create meaningful and memorable experiences.";
+  const collaborateBottomText =
+    contactCMSContent?.collaborate_bottom_text ||
+    "I Understand That A 50% Non-Refundable Deposit Is Required Before Any Work Begins.";
+  const collaborateBg = contactCMSContent?.collaborate_bg_image || HeaderBg;
 
   const onSubmit = async (data) => {
     if (!agree) {
@@ -90,7 +96,7 @@ const CollaboratePageClient = () => {
       {/* Header Banner Section */}
       <div className="relative w-full h-[350px] sm:h-[400px] md:h-[450px] flex items-center justify-center p-6 select-none overflow-hidden">
         <Image
-          src={HeaderBg}
+          src={collaborateBg}
           alt="Collaborate with Pariah"
           fill
           className="object-cover opacity-60 object-center"

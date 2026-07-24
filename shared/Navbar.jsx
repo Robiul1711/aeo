@@ -23,6 +23,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentHash, setCurrentHash] = useState("");
   const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -36,8 +37,13 @@ const Navbar = () => {
     };
     window.addEventListener("hashchange", handleHashChange);
 
-    // Also track scroll position to clear hash if scrolled to top
+    // Also track scroll position to clear hash if scrolled to top and manage isScrolled state
     const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
       if (window.scrollY < 100) {
         setCurrentHash("");
       }
@@ -84,7 +90,11 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="w-full bg-[#0D0D0D]/40 backdrop-blur-md border-b border-white/5 sticky md:py-2 top-0 z-50">
+      <header className={`w-full fixed md:py-2 top-0 z-50 transition-all duration-300 ${
+        isScrolled 
+          ? "bg-[#0D0D0D]/50 backdrop-blur-md border-b border-white/5 shadow-lg" 
+          : "bg-transparent border-b border-transparent"
+      }`}>
         <div className="section-padding-x h-20 flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center">
