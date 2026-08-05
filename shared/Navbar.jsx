@@ -90,10 +90,14 @@ const Navbar = () => {
 
   return (
     <>
-      <header className={`w-full fixed md:py-2 top-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? "bg-[#0D0D0D]/50 backdrop-blur-md border-b border-white/5 shadow-lg" 
-          : "bg-transparent border-b border-transparent"
+      <header className={`w-full top-0 z-50 transition-all duration-300 md:py-2 ${
+        pathname === "/"
+          ? `fixed ${
+              isScrolled 
+                ? "bg-[#0D0D0D]/50 backdrop-blur-md border-b border-white/5 shadow-lg" 
+                : "bg-transparent border-b border-transparent"
+            }`
+          : "sticky bg-[#0D0D0D]/50 backdrop-blur-md border-b border-white/5 shadow-lg"
       }`}>
         <div className="section-padding-x h-20 flex justify-between items-center">
           {/* Logo */}
