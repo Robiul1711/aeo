@@ -43,7 +43,7 @@ const MarqueeColumn = ({
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden h-67.5 sm:h-82.5 md:h-95 lg:h-102.5 rounded-[20px] bg-transparent ${className}`}
+      className={`relative flex flex-col overflow-hidden w-full aspect-[4/10.5] rounded-[20px] bg-transparent ${className}`}
     >
       <div
         className={`flex flex-col gap-3 sm:gap-4 shrink-0 ${directionClass} ${speedClass} hover:[animation-play-state:paused]`}
